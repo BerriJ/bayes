@@ -1,0 +1,246 @@
+---
+title: 'Bayes Seminar'
+author: 'Jens Klenke'
+subtitle: "Advanced R for Econometricians"
+type: "Seminar Paper"
+discipline: "VWL M.Sc."
+date: "today"
+studid: "3071594"
+supervisor: "Christoph Hanck"
+secondsupervisor: "NA"
+semester: "5"
+estdegree_emester: "Winter Term 2020"
+deadline: "Jan. 17th 2020"
+output:
+  pdf_document:
+    keep_tex: yes
+    template: template.tex
+    fig_caption: yes
+    citation_package: biblatex
+    number_sections: true
+toc: true
+lot: true
+lof: true
+graphics: true
+biblio-title: References
+linkcolor: black
+urlcolor: black
+citecolor: black
+colorlinks: true
+font: Times New Roman
+fontsize: 12pt
+geometry: lmargin = 5cm,rmargin = 2.5cm,tmargin = 2.5cm,bmargin = 2.5cm
+biblio-files: references.bib
+classoption: a4paper
+---
+
+<!-- % Template Version 1.1 -->
+
+<!-- Git version -->
+
+```{r , include=FALSE}
+Sys.setlocale(locale = "English_United States.1252") ## English US Windows
+knitr::opts_chunk$set(echo = TRUE)
+
+
+#### required packages ####
+source("packages/packages.R")
+```
+
+# Introduction
+
+In recent years, the \ac{LASSO} method of TIBSHIRANI has emerged as an alternative to ordinary least squares estimation. The success of the method is mainly due to its ability to perform both variable selection and estimation. As already Tibshirani pointed out in his original paper the standard \ac{LASSO} model can be interpreted as a linear regression with a Laplace prior. PARK and CASELLA  where the first to implement the Bayesian l\ac{LASSO} >>using a conditional Laplace prior specification<<.
+
+Our goal is to compare the result of the Bayesian \ac{LASSO} with normal \ac{LASSO} method and an ordinary least square estimation. The focus is particularly on the number of non-significant parameters in the linear model or, in case of the \acp{LASSO} the parameters equal to zero.  
+
+\newpage
+
+# Theory of Bayesian inference  
+
+The Bayesian (inference) statistics based on the Bayes' theorem for events.  
+
+\begin{align}
+\label{eq:bayes_theorem}
+  P(A | B) = \dfrac{P (B | A) P(A)}{P(B)}
+\end{align}
+
+For Bayesian statistics the event theorem gets \eqref{eq:bayes_theorem} rewritten to apply it to densities. Where $\pi (\theta)$ is the prior distribution - which could be gained from prior research or knowledge, $f(y | \theta )$ is the likelihood function, and $\pi (\theta| y)$ is the posterior distribution, we then get the following. 
+
+\begin{align}
+\label{eq:bayes_dens}
+  \pi (\theta | y) = \dfrac{f(y | \theta) \pi(\theta)}{f(y)}
+\end{align}
+
+From \eqref{eq:bayes_dens} the advantages and disadvantages of Bayesian statistics compared to frequentist statistics can directly be retrieved. One major adavantage is that the Bayesian approach can account for prior knowledge and points out a philosophical difference to the frequentist approach - that the obtained data stands not alone. Another, key difference and advantage is that in the Bayesian world the computation are made with distributions and this leads to a better information level than just the computation of the first and second moment. The computation of distributions are also the greatest disadvantages or more neutral the biggest problem of the Bayesian approach because in high dimensional problems the computation takes a lot of times or is sometimes even not possible. A solution to that is that with newer and better computers it is possible to simulate the integrals with a \ac{MCMC} method. GHOSH      
+
+\newpage
+
+# Data description 
+
+```{r include = FALSE, warning = TRUE}
+# Data wrangling 
+
+data_19 <- readr::read_csv(here::here('00_data/career_mode/players_19.csv'))
+data_20 <- readr::read_csv(here::here('00_data/career_mode/players_20.csv'))
+
+#### datsa manupilation ####
+
+# creating a yearly variable dummy 
+
+year <-as.data.frame(as.factor(c(rep(2019, nrow(data_19)),
+         rep(2020, nrow(data_20)))))
+colnames(year)[1] <- "year"
+
+# hanging the different classes of the different data frames to merge these
+data_19 <- data_19 %>%
+  mutate_if(. , is.numeric, as.character) 
+
+data_20 <- data_20 %>% 
+  mutate_if(. , is.numeric, as.character)
+
+# bind the data frames 
+fifa_data <- bind_rows(data_19, data_20, .id = NULL)%>%
+  bind_cols( year)%>%
+  dplyr::select(-(player_traits:rb)) # getting rid of some unnecessary variables 
+
+
+fifa_data <- fifa_data %>%
+  mutate(age = as.numeric(age),                 #changing the class agian 
+         value_eur = as.numeric(value_eur),
+         log_value = log(value_eur),
+         wage_eur = as.numeric(wage_eur),
+         log_wage = log(wage_eur),
+         height_cm = as.numeric(height_cm),
+         weight_kg = as.numeric(weight_kg),
+         overall = as.numeric(overall),
+         potential = as.numeric(potential),
+         player_positions = as.factor(player_positions),
+         preferred_foot = as.factor(preferred_foot),
+         international_reputation = as.factor(international_reputation),
+         weak_foot = as.factor(weak_foot),
+         skill_moves = as.factor(skill_moves),
+         work_rate = as.factor(work_rate),
+         body_type = as.factor(body_type),
+         real_face  = as.logical(real_face),
+         release_clause_eur = as.numeric(release_clause_eur),
+         team_position = as.factor(team_position),
+         contract_valid_until = as.numeric(contract_valid_until),
+         pace = as.numeric(pace),
+         shooting = as.numeric(shooting),
+         passing = as.numeric(passing),
+         defending = as.numeric(defending),
+         dribbling = as.numeric(dribbling),
+         gk_diving = as.numeric(gk_diving),                  
+         gk_handling = as.numeric(gk_handling),                
+         gk_kicking = as.numeric(gk_kicking),                
+         gk_reflexes = as.numeric(gk_reflexes),            
+         gk_speed = as.numeric(gk_speed),                
+         gk_positioning = as.numeric(gk_positioning),
+         nationality = as.factor(nationality),
+         physic = as.numeric(physic),
+  )%>% 
+  filter( # deleting infinite values
+    log_value > -Inf,
+    log_wage > -Inf,
+  )
+
+
+train <- fifa_data %>%
+  filter(year == 2019)%>%
+  dplyr::select(log_wage,
+                log_value,
+                age,
+                height_cm,
+                weight_kg,
+                overall,
+                potential,
+                shooting,
+                contract_valid_until,
+                pace,
+                shooting,
+                passing,
+                 dribbling,
+                defending,)%>%
+  imputeTS::na_replace(., 0) # replace the NA's  (Bayesian) lasso can not handle NA's
+  
+
+```
+
+
+We collected the data from the online database platform _kaggel._  ZITATE The dataset included  6 years of data for all players which where included in the soccer simulation game _FIFA_  from _EA Sports_. We dicided to just keep the data for 2019 and 2020.  The Data for 2019 will be used  for the estimation of the differen models whereas the 2020 data will be used to compare quality of the model with an out of sample \ac{RMSE}.  
+
+
+```{r , echo = FALSE}
+
+sum_var <- papeR::summarise( as.data.frame(fifa_data%>%dplyr::select(value_eur, wage_eur, overall, year)), 
+                   group = 'year', p_value = FALSE, quantil = FALSE )
+  
+sum_var <- sum_var[,1:((dim(sum_var)[2])-2)]
+  
+knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary', col.names = c('', 'year', '', 'N', ' ', 'mean', 'sd' ), row.names = FALSE )
+
+```
+
+As one can see in Table \ref{tab:sum} the differences between the versions for the most important variables are considerable small. For the variable overall `r mean(fifa_data) ` 
+
+\newpage
+
+# Methodic Procedure
+
+To compare the Bayesian \ac{LASSO} we will analyse the data also with a linear multivariate model, and the frequentist \ac{LASSO}. We wil start with the linear model and will modifie the model equations step by step forward the bayesian version. 
+
+
+## Linear Model
+
+The frequentist multivariate regression model has the follwing model equation. 
+
+\begin{align}
+\label{eq:lm}
+\pmb{Y = \beta_0 + X \beta} + \pmb{\epsilon}
+\end{align}
+
+Where the coefficient will be estimated by the ordinary least square method, which means that $\pmb{\beta}$ should be chosen so that the _Euclidean norm_ $\left( || \mathbf{y - X\beta} ||_2 \right)$ is minimal. This yields in the conditon for the estimation of coefficients:
+
+\begin{align}
+\label{eq:lm_con}
+ \hat{\pmb{\beta}} = \argmin_{ \pmb{\beta}} (\pmb{y - \beta_0 - X  \beta})^T (\pmb{y - \beta_0 - X  \beta})
+\end{align}
+
+
+
+## \acf{LASSO} 
+
+
+In the \ac{LASSO} method the model equation is the same as the equation for the multivariate but the condition for the optimization of the estimators has an additional punishment term.  
+
+\begin{align}
+\label{eq:la_con}
+\hat{\pmb{\beta}} = \argmin_{\pmb{\beta}}  \left( \pmb{y - X \beta} \right)^T \left( \pmb{y - X \beta} \right) + \lambda \sum_{i = 1}^{p} |\beta_j|
+\end{align}
+
+
+
+
+## Bayesian Lasso
+
+### Gibbs Sampler
+
+
+# Estimation of the Bayesian Lasso 
+
+# Posteriod-based Estimation and prediction 
+
+# Residuals and Sensitive Analysis 
+
+# Discussion and further research 
+
+
+# References
+
+\begin{align*}
+  \quad - 
+\end{align*}
+
+
+
+
