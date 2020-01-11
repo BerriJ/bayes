@@ -155,10 +155,16 @@ library(cowplot)
 
 
 
+aa <- mean(fifa_data$value_eur[fifa_data$year ==2020])
+ 
 
-
-
-
+formatC(aa, format = "e", digits = 2)
+formatC(aa, format = "10", digits = 2)
+formatC(aa, format = "f", digits = 2)
+formatC(aa, format = "g", digits = 2)
+formatC(aa, format = "G", digits = 2)
+formatC(aa, format = "fg", digits = 2)
+formatC(aa, format = "s", digits = 2)
 
 
 

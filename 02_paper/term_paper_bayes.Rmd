@@ -147,31 +147,31 @@ fifa_data <- fifa_data %>%
   )
 
 
+vars <- c('log_wage', 'log_value', 'age', 'height_cm', 'weight_kg', 'overall',
+          'potential', 'shooting', 'contract_valid_until', 'pace', 'shooting', 
+          'passing', 'dribbling', 'defending')
+
 train <- fifa_data %>%
-  filter(year == 2019)%>%
-  dplyr::select(log_wage,
-                log_value,
-                age,
-                height_cm,
-                weight_kg,
-                overall,
-                potential,
-                shooting,
-                contract_valid_until,
-                pace,
-                shooting,
-                passing,
-                dribbling,
-                defending,)%>%
-  imputeTS::na_replace(., 0) # replace the NA's  (Bayesian) lasso can not handle NA's; discussion  !!!
-  
+  dplyr::filter(year == 2019)%>%
+  dplyr::select(vars)%>%
+  imputeTS::na_replace(., 0) # replace the NA's  (Bayesian) lasso can not handle NA's
+
+
+test <- fifa_data %>%
+  dplyr::filter(year == 2020)%>%
+  dplyr::select(vars)%>%
+  imputeTS::na_replace(., 0)
 
 ```
 
 
-We collected the data from the online database platform _kaggel._  ZITATE The dataset included  6 years of data for all players which where included in the soccer simulation game _FIFA_  from _EA Sports_. We dicided to just keep the data for 2019 and 2020.  The Data for 2019 will be used  for the estimation of the differen models whereas the 2020 data will be used to compare the quality of the models with an out of sample \ac{RMSE}. 
+We collected the data from the online database platform _kaggel._ [@leone_fifa_2020] ZITATE The dataset included  6 years of data for all players which where included in the soccer simulation game _FIFA_  from _EA Sports_. We dicided to just keep the data for 2019 and 2020.  The Data for 2019 contains  `r length(fifa_data$value_eur[fifa_data$year == 2019])` datapoints  will be used  for the estimation of the differen models whereas the 2020 data with `r length(fifa_data$value_eur[fifa_data$year == 2020])` will be used to compare the quality of the models with an out of sample \ac{RMSE}. 
 
-A fundamental problem of the data set was that goalkeepers are systematically rated differently than field players. Therefore, in the subcategories of _overall_ all field player categories were assigned to NAs. Conversely, all field players have NAs in all goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot handle NAs, they are set to zero for all models.    
+@leone_fifa_2020
+
+A fundamental problem of the data set was that goalkeepers are systematically rated differently than field players. Therefore, in the subcategories of _overall_ all field player categories were assigned to NAs. Conversely, all field players have NAs in all goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot handle NAs, they are set to zero for all models. 
+
+It is not very realistic that a fielder has no values in the goalkeeper categories and vice versa. However, it can be argued, at least for outfield players, that goalkeeper attributes play no role in determining market values. This argumentation does not seem to hold for goalkeepers, at least passing can be assumed to be an influential variable for the market value. Nevertheless,  due to the lack of alternatives, all NAs have been replaced by zero.  
 
 
 
@@ -182,42 +182,39 @@ sum_var <- papeR::summarise( as.data.frame(fifa_data%>%dplyr::select(value_eur, 
   
 sum_var <- sum_var[,1:((dim(sum_var)[2])-2)]
   
-knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary of some important variables', col.names = c('', 'year', '', 'N', ' ', 'mean', 'sd' ), row.names = FALSE,  booktabs = TRUE, linesep = "")%>%
+knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary of some important variables for the 2019 FIFA edition', format.args = list(decimal.mark = '.', big.mark = " "), col.names = c('', 'year', '', 'N', ' ', 'mean', 'sd' ), row.names = FALSE,  booktabs = TRUE, linesep = "")%>%
   kable_styling(latex_options = c("striped", "hold_position"))
 
 
 ```
 
-As one can see in Table \ref{tab:sum} the differences between the versions for the most important variables are considerable small. From 2019 to 2020 the mean player _value_ (response variable) increased by `r round(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), 2)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) -mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) -mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Simular results are observabel for the probly most importanten righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
+As one can see in Table \ref{tab:sum} the differences between the editions for the most important variables are considerable small. For example,  from 2019 to 2020 the mean player _value_ (response variable) increased by `r scales::scientific(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), digits = 3)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Simular results are observabel for the probly most importanten righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
 
-```{r , fig1, echo = FALSE, fig.cap= " \\label{fig:hist_1} Histograms of player values and log player values"}
+```{r , fig1, echo = FALSE, fig.cap = " \\label{fig:hist_1} Histograms of player values and log player values"}
 
 plot_1 <- ggplot(data = fifa_data%>%filter(year == 2019), aes(value_eur))+
-  geom_histogram(bins = 100, fill='blue',  alpha = 0.5)+
+  geom_histogram(bins = 100, fill='blue',  alpha = 0.75)+
   labs(title = "Histogram of Player Values", x = "Value in Euro", y = "Quantity")+
   theme_minimal()+
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))+
+  scale_x_continuous( labels = scales::comma) 
 
 plot_2 <- ggplot(data = fifa_data%>%filter(year == 2019), aes(log(value_eur)))+
-  geom_histogram(bins = 100, fill='blue', alpha = 0.5)+
+  geom_histogram(bins = 100, fill='blue', alpha = 0.75)+
   labs(title = "Histogram of logarithmic Player Values", x = "Logarithmic Value in Euro", y = "Quantity")+
   theme_minimal()+
-  theme(plot.title = element_text(hjust = 0.5))
+  theme(plot.title = element_text(hjust = 0.5) , plot.margin=unit(c(1,1,1.5,1.2),"cm"))
 
 plot_grid(plot_1, plot_2, align = "v", nrow = 2, rel_heights = c(1/4, 1/4, 1/2))
-
 ```
 
 
-As you can see in Figure  \ref{fig:hist_1}
-Multikollinarity 
-
-
+As can be seen for the variable value in Figure \ref{fig:hist_1}, this relatively strong right-skew is distributed, a similar pattern can be observed for the variable wage. Since we also estimate a linear model and this often leads to non-normally distributed residuals, these were logarithmized.
 
 
 \newpage
 
-# Methodic Procedure
+# Models used
 
 To compare the Bayesian \ac{LASSO} we will analyse the data also with a linear multivariate model, and the frequentist \ac{LASSO}. We wil start with the linear model and will modifie the model equations step by step forward the bayesian version. 
 
@@ -231,7 +228,7 @@ The frequentist multivariate regression model has the follwing model equation.
 \pmb{Y = \beta_0 + X \beta} + \pmb{\epsilon}
 \end{align}
 
-Where the coefficient will be estimated by the ordinary least square method, which means that $\pmb{\beta}$ should be chosen so that the _Euclidean norm_ $\left( || \mathbf{y - X\beta} ||_2 \right)$ is minimal. This yields in the conditon for the estimation of coefficients:
+Where $\pmb{y}$ is the $n \times 1$ response vector, $\pmb{X}$ is the $n \times p$ matrix of regressors and, $\pmb{\epsilon}$ is the $n \times 1$ vecotr of \ac{i.i.d.} errors with mean 0 and unknown variance $\sigma^2$. The coefficient will be estimated by the ordinary least square method, which means that $\pmb{\beta}$ should be chosen so that the _Euclidean norm_ $\left( || \mathbf{y - X\beta} ||_2 \right)$ is minimal. This yields in the conditon for the estimation of coefficients:
 
 \begin{align}
 \label{eq:lm_con}
@@ -240,10 +237,11 @@ Where the coefficient will be estimated by the ordinary least square method, whi
 
 
 
+
 ## \acf{LASSO} 
 
 
-In the \ac{LASSO} method the model equation is the same as the equation for the multivariate but the condition for the optimization of the estimators has an additional punishment term.  
+In the \ac{LASSO} method the model equation is the same as the equation for the multivariate but the condition for the optimization of the estimators in equation \eqref{eq:lm_con} has an additional punishment term.  Which leads to the optimazation of:  
 
 \begin{align}
 \label{eq:la_con}
@@ -251,9 +249,25 @@ In the \ac{LASSO} method the model equation is the same as the equation for the 
 \end{align}
 
 
+for some $\lambda \geq 0$. This method is also often referred to as $L_1$ -penalized least squares estimation.  
+
+Already in his original paper @tibshirani_regression_1996 has pointed out the possibility that his methods can also be interpreted Bayesian. The LASSO estimates can be considered as posterior mode estimates with a double-exponential Laplace prior .
+
+<!-- (e.g., Figueiredo 2003; Bae and Mallick 2004; Yuan and Lin 2005-->
 
 
 ## Bayesian Lasso
+
+@park_bayesian_2008 considered a fully Bayesian approach using a conditional Laplace prior of the form 
+
+\begin{align} 
+\label{eq:la_bay_prior}
+ \pi \left( \beta | \sigma^2 \right)   = \prod_{j = 1}^{p} \dfrac{\lambda}{2 \sqrt{\sigma^e}} e^{\dfrac{- \lambda |\beta_j |}{\sqrt{\sigma^2}}} 
+\end{align}
+
+
+
+[@park_bayesian_2008]
 
 ### Gibbs Sampler
 
@@ -267,12 +281,7 @@ In the \ac{LASSO} method the model equation is the same as the equation for the 
 # Discussion and further research 
 
 
-# References
-
-\begin{align*}
-  \quad - 
-\end{align*}
 
 
 
-
+\newpage

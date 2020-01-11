@@ -262,6 +262,7 @@
  \acro{pls}{Partial Least Squares}
  \acro{RMSE}{Root Mean Squared Error}
  \acro{MCMC}{Markov chain Monte Carlo} 
+ \acro{i.i.d.}{independent and identically distributed}
  \acroplural{LRG}[LRG]{längefristige Refinanzierungsgeschäfte}
 
 %Falls eine Abkürzung in der Mehrzahl nicht einfach auf "s" endet muss das speziell eingestellt werden.
@@ -339,12 +340,15 @@ better computers it is possible to simulate the integrals with a
 \section{Data description}\label{data-description}}
 
 We collected the data from the online database platform \emph{kaggel.}
-ZITATE The dataset included 6 years of data for all players which where
-included in the soccer simulation game \emph{FIFA} from \emph{EA
-Sports}. We dicided to just keep the data for 2019 and 2020. The Data
-for 2019 will be used for the estimation of the differen models whereas
-the 2020 data will be used to compare the quality of the models with an
-out of sample \ac{RMSE}.
+\autocite{leone_fifa_2020} ZITATE The dataset included 6 years of data
+for all players which where included in the soccer simulation game
+\emph{FIFA} from \emph{EA Sports}. We dicided to just keep the data for
+2019 and 2020. The Data for 2019 contains 17538 datapoints will be used
+for the estimation of the differen models whereas the 2020 data with
+18028 will be used to compare the quality of the models with an out of
+sample \ac{RMSE}.
+
+\textcite{leone_fifa_2020}
 
 A fundamental problem of the data set was that goalkeepers are
 systematically rated differently than field players. Therefore, in the
@@ -353,32 +357,40 @@ assigned to NAs. Conversely, all field players have NAs in all
 goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot
 handle NAs, they are set to zero for all models.
 
+It is not very realistic that a fielder has no values in the goalkeeper
+categories and vice versa. However, it can be argued, at least for
+outfield players, that goalkeeper attributes play no role in determining
+market values. This argumentation does not seem to hold for goalkeepers,
+at least passing can be assumed to be an influential variable for the
+market value. Nevertheless, due to the lack of alternatives, all NAs
+have been replaced by zero.
+
 \begin{table}[!h]
 
-\caption{\label{tab:unnamed-chunk-3}\label{tab:sum} Summary of some important variables}
+\caption{\label{tab:unnamed-chunk-3}\label{tab:sum} Summary of some important variables for the 2019 FIFA edition}
 \centering
 \begin{tabular}[t]{lllrlrr}
 \toprule
  & year &  & N &   & mean & sd\\
 \midrule
-\rowcolor{gray!6}  value\_eur & 2019 &  & 17538 &  & 2473043.68 & 5674963.22\\
- & 2020 &  & 18028 &  & 2518484.58 & 5616359.21\\
-\rowcolor{gray!6}  wage\_eur & 2019 &  & 17538 &  & 10085.87 & 22448.70\\
- & 2020 &  & 18028 &  & 9584.81 & 21470.29\\
-\rowcolor{gray!6}  overall & 2019 &  & 17538 &  & 66.23 & 7.01\\
- & 2020 &  & 18028 &  & 66.21 & 6.95\\
-\rowcolor{gray!6}  age & 2019 &  & 17538 &  & 25.17 & 4.64\\
- & 2020 &  & 18028 &  & 25.23 & 4.63\\
-\rowcolor{gray!6}  potential & 2019 &  & 17538 &  & 71.40 & 6.15\\
- & 2020 &  & 18028 &  & 71.56 & 6.14\\
+\rowcolor{gray!6}  value\_eur & 2019 &  & 17 538 &  & 2 473 043.68 & 5 674 963.22\\
+ & 2020 &  & 18 028 &  & 2 518 484.58 & 5 616 359.21\\
+\rowcolor{gray!6}  wage\_eur & 2019 &  & 17 538 &  & 10 085.87 & 22 448.70\\
+ & 2020 &  & 18 028 &  & 9 584.81 & 21 470.29\\
+\rowcolor{gray!6}  overall & 2019 &  & 17 538 &  & 66.23 & 7.01\\
+ & 2020 &  & 18 028 &  & 66.21 & 6.95\\
+\rowcolor{gray!6}  age & 2019 &  & 17 538 &  & 25.17 & 4.64\\
+ & 2020 &  & 18 028 &  & 25.23 & 4.63\\
+\rowcolor{gray!6}  potential & 2019 &  & 17 538 &  & 71.40 & 6.15\\
+ & 2020 &  & 18 028 &  & 71.56 & 6.14\\
 \bottomrule
 \end{tabular}
 \end{table}
 
 As one can see in Table \ref{tab:sum} the differences between the
-versions for the most important variables are considerable small. From
-2019 to 2020 the mean player \emph{value} (response variable) increased
-by \ensuremath{4.54409\times 10^{4}} which is about 1.8 per cent or 0.01
+editions for the most important variables are considerable small. For
+example, from 2019 to 2020 the mean player \emph{value} (response
+variable) increased by 4.54e+04 which is about 1.8 per cent or 0.01
 standard deviations. Simular results are observabel for the probly most
 importanten righthand variables \emph{wage} and \emph{overall} with a
 difference in the means of -0.02 and -0.003 standard deviations between
@@ -391,12 +403,16 @@ difference in the means of -0.02 and -0.003 standard deviations between
 values}
 \end{figure}
 
-As you can see in Figure \ref{fig:hist_1} Multikollinarity
+As can be seen for the variable value in Figure \ref{fig:hist_1}, this
+relatively strong right-skew is distributed, a similar pattern can be
+observed for the variable wage. Since we also estimate a linear model
+and this often leads to non-normally distributed residuals, these were
+logarithmized.
 
 \newpage
 
-\hypertarget{methodic-procedure}{%
-\section{Methodic Procedure}\label{methodic-procedure}}
+\hypertarget{models-used}{%
+\section{Models used}\label{models-used}}
 
 To compare the Bayesian \ac{LASSO} we will analyse the data also with a
 linear multivariate model, and the frequentist \ac{LASSO}. We wil start
@@ -414,10 +430,14 @@ equation.
 \pmb{Y = \beta_0 + X \beta} + \pmb{\epsilon}
 \end{align}
 
-Where the coefficient will be estimated by the ordinary least square
-method, which means that \(\pmb{\beta}\) should be chosen so that the
-\emph{Euclidean norm} \(\left( || \mathbf{y - X\beta} ||_2 \right)\) is
-minimal. This yields in the conditon for the estimation of coefficients:
+Where \(\pmb{y}\) is the \(n \times 1\) response vector, \(\pmb{X}\) is
+the \(n \times p\) matrix of regressors and, \(\pmb{\epsilon}\) is the
+\(n \times 1\) vecotr of \ac{i.i.d.} errors with mean 0 and unknown
+variance \(\sigma^2\). The coefficient will be estimated by the ordinary
+least square method, which means that \(\pmb{\beta}\) should be chosen
+so that the \emph{Euclidean norm}
+\(\left( || \mathbf{y - X\beta} ||_2 \right)\) is minimal. This yields
+in the conditon for the estimation of coefficients:
 
 \begin{align}
 \label{eq:lm_con}
@@ -429,15 +449,34 @@ minimal. This yields in the conditon for the estimation of coefficients:
 
 In the \ac{LASSO} method the model equation is the same as the equation
 for the multivariate but the condition for the optimization of the
-estimators has an additional punishment term.
+estimators in equation \eqref{eq:lm_con} has an additional punishment
+term. Which leads to the optimazation of:
 
 \begin{align}
 \label{eq:la_con}
 \hat{\pmb{\beta}} = \argmin_{\pmb{\beta}}  \left( \pmb{y - X \beta} \right)^T \left( \pmb{y - X \beta} \right) + \lambda \sum_{i = 1}^{p} |\beta_j|
 \end{align}
 
+for some \(\lambda \geq 0\). This method is also often referred to as
+\(L_1\) -penalized least squares estimation.
+
+Already in his original paper \textcite{tibshirani_regression_1996} has
+pointed out the possibility that his methods can also be interpreted
+Bayesian. The LASSO estimates can be considered as posterior mode
+estimates with a double-exponential Laplace prior .
+
 \hypertarget{bayesian-lasso}{%
 \subsection{Bayesian Lasso}\label{bayesian-lasso}}
+
+\textcite{park_bayesian_2008} considered a fully Bayesian approach using
+a conditional Laplace prior of the form
+
+\begin{align} 
+\label{eq:la_bay_prior}
+ \pi \left( \beta | \sigma^2 \right)   = \prod_{j = 1}^{p} \dfrac{\lambda}{2 \sqrt{\sigma^e}} e^{\dfrac{- \lambda |\beta_j |}{\sqrt{\sigma^2}}} 
+\end{align}
+
+\autocite{park_bayesian_2008}
 
 \hypertarget{gibbs-sampler}{%
 \subsubsection{Gibbs Sampler}\label{gibbs-sampler}}
@@ -458,12 +497,15 @@ Analysis}\label{residuals-and-sensitive-analysis}}
 \section{Discussion and further
 research}\label{discussion-and-further-research}}
 
-\hypertarget{references}{%
-\section{References}\label{references}}
+\newpage
 
-\begin{align*}
-  \quad - 
-\end{align*}
+\renewcommand*{\mkbibnamefamily}[1]{\textbf{#1}}
+\renewcommand*{\mkbibnamegiven}[1]{\textbf{#1}}
+\renewcommand*{\mkbibnameprefix}[1]{\textbf{#1}}
+\renewcommand*{\mkbibnamesuffix}[1]{\textbf{#1}}
+\printbibliography[title=References]
+
+
 
 \newpage
 \textbf{Eidesstattliche Versicherung}

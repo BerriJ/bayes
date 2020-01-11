@@ -130,6 +130,26 @@ train <- fifa_data %>%
                 team_position_CAM:team_position_ST)%>%
   imputeTS::na_replace(., 0)
 
+
+test <- fifa_data %>%
+  filter(year == 2020)%>%
+  dplyr::select(log_wage,
+                log_value,
+                age,
+                height_cm,
+                weight_kg,
+                overall, 
+                potential, 
+                shooting,
+                contract_valid_until,
+                pace,
+                shooting,
+                passing,
+                dribbling,
+                defending,
+                team_position_CAM:team_position_ST)%>%
+  imputeTS::na_replace(., 0)
+
   
 
   

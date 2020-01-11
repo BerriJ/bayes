@@ -367,6 +367,7 @@ $endif$
  \acro{pls}{Partial Least Squares}
  \acro{RMSE}{Root Mean Squared Error}
  \acro{MCMC}{Markov chain Monte Carlo} 
+ \acro{i.i.d.}{independent and identically distributed}
  \acroplural{LRG}[LRG]{längefristige Refinanzierungsgeschäfte}
 
 %Falls eine Abkürzung in der Mehrzahl nicht einfach auf "s" endet muss das speziell eingestellt werden.
@@ -396,7 +397,18 @@ $endif$
 
 $endif$
 $endif$
+$if(biblatex)$
+
+\renewcommand*{\mkbibnamefamily}[1]{\textbf{#1}}
+\renewcommand*{\mkbibnamegiven}[1]{\textbf{#1}}
+\renewcommand*{\mkbibnameprefix}[1]{\textbf{#1}}
+\renewcommand*{\mkbibnamesuffix}[1]{\textbf{#1}}
+\printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
+
+$endif$
+
 $for(include-after)$
+
 $include-after$
 
 $endfor$
