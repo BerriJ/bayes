@@ -42,6 +42,8 @@ classoption: a4paper
 Sys.setlocale(locale = "English_United States.1252") ## English US Windows
 knitr::opts_chunk$set(echo = TRUE)
 
+#options(kableExtra.latex.load_packages = FALSE)
+
 
 #### required packages ####
 source("packages/packages.R")
@@ -159,29 +161,59 @@ train <- fifa_data %>%
                 pace,
                 shooting,
                 passing,
-                 dribbling,
+                dribbling,
                 defending,)%>%
-  imputeTS::na_replace(., 0) # replace the NA's  (Bayesian) lasso can not handle NA's
+  imputeTS::na_replace(., 0) # replace the NA's  (Bayesian) lasso can not handle NA's; discussion  !!!
   
 
 ```
 
 
-We collected the data from the online database platform _kaggel._  ZITATE The dataset included  6 years of data for all players which where included in the soccer simulation game _FIFA_  from _EA Sports_. We dicided to just keep the data for 2019 and 2020.  The Data for 2019 will be used  for the estimation of the differen models whereas the 2020 data will be used to compare quality of the model with an out of sample \ac{RMSE}.  
+We collected the data from the online database platform _kaggel._  ZITATE The dataset included  6 years of data for all players which where included in the soccer simulation game _FIFA_  from _EA Sports_. We dicided to just keep the data for 2019 and 2020.  The Data for 2019 will be used  for the estimation of the differen models whereas the 2020 data will be used to compare the quality of the models with an out of sample \ac{RMSE}. 
+
+A fundamental problem of the data set was that goalkeepers are systematically rated differently than field players. Therefore, in the subcategories of _overall_ all field player categories were assigned to NAs. Conversely, all field players have NAs in all goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot handle NAs, they are set to zero for all models.    
+
 
 
 ```{r , echo = FALSE}
 
-sum_var <- papeR::summarise( as.data.frame(fifa_data%>%dplyr::select(value_eur, wage_eur, overall, year)), 
+sum_var <- papeR::summarise( as.data.frame(fifa_data%>%dplyr::select(value_eur, wage_eur, overall, year, age, potential )), 
                    group = 'year', p_value = FALSE, quantil = FALSE )
   
 sum_var <- sum_var[,1:((dim(sum_var)[2])-2)]
   
-knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary', col.names = c('', 'year', '', 'N', ' ', 'mean', 'sd' ), row.names = FALSE )
+knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary of some important variables', col.names = c('', 'year', '', 'N', ' ', 'mean', 'sd' ), row.names = FALSE,  booktabs = TRUE, linesep = "")%>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
 
 ```
 
-As one can see in Table \ref{tab:sum} the differences between the versions for the most important variables are considerable small. For the variable overall `r mean(fifa_data) ` 
+As one can see in Table \ref{tab:sum} the differences between the versions for the most important variables are considerable small. From 2019 to 2020 the mean player _value_ (response variable) increased by `r round(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), 2)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) -mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) -mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Simular results are observabel for the probly most importanten righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
+
+```{r , fig1, echo = FALSE, fig.cap= " \\label{fig:hist_1} Histograms of player values and log player values"}
+
+plot_1 <- ggplot(data = fifa_data%>%filter(year == 2019), aes(value_eur))+
+  geom_histogram(bins = 100, fill='blue',  alpha = 0.5)+
+  labs(title = "Histogram of Player Values", x = "Value in Euro", y = "Quantity")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot_2 <- ggplot(data = fifa_data%>%filter(year == 2019), aes(log(value_eur)))+
+  geom_histogram(bins = 100, fill='blue', alpha = 0.5)+
+  labs(title = "Histogram of logarithmic Player Values", x = "Logarithmic Value in Euro", y = "Quantity")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot_grid(plot_1, plot_2, align = "v", nrow = 2, rel_heights = c(1/4, 1/4, 1/2))
+
+```
+
+
+As you can see in Figure  \ref{fig:hist_1}
+Multikollinarity 
+
+
+
 
 \newpage
 

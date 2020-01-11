@@ -50,7 +50,6 @@
 \setlength\bibitemsep{1.5\itemsep}
 \addbibresource{R_packages.bib}
 \bibliography{references.bib}
-\usepackage{longtable,booktabs}
 \usepackage{graphicx}
 \makeatletter
 \def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
@@ -108,6 +107,20 @@
   \postdate{\par}
   \date{today}
 
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
 
 %% linespread settings
 
@@ -330,31 +343,55 @@ ZITATE The dataset included 6 years of data for all players which where
 included in the soccer simulation game \emph{FIFA} from \emph{EA
 Sports}. We dicided to just keep the data for 2019 and 2020. The Data
 for 2019 will be used for the estimation of the differen models whereas
-the 2020 data will be used to compare quality of the model with an out
-of sample \ac{RMSE}.
+the 2020 data will be used to compare the quality of the models with an
+out of sample \ac{RMSE}.
 
-\begin{longtable}[]{@{}lllrlrr@{}}
-\caption{\label{tab:sum} Summary}\tabularnewline
+A fundamental problem of the data set was that goalkeepers are
+systematically rated differently than field players. Therefore, in the
+subcategories of \emph{overall} all field player categories were
+assigned to NAs. Conversely, all field players have NAs in all
+goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot
+handle NAs, they are set to zero for all models.
+
+\begin{table}[!h]
+
+\caption{\label{tab:unnamed-chunk-3}\label{tab:sum} Summary of some important variables}
+\centering
+\begin{tabular}[t]{lllrlrr}
 \toprule
-& year & & N & & mean & sd\tabularnewline
+ & year &  & N &   & mean & sd\\
 \midrule
-\endfirsthead
-\toprule
-& year & & N & & mean & sd\tabularnewline
-\midrule
-\endhead
-value\_eur & 2019 & & 17538 & & 2473043.68 & 5674963.22\tabularnewline
-& 2020 & & 18028 & & 2518484.58 & 5616359.21\tabularnewline
-wage\_eur & 2019 & & 17538 & & 10085.87 & 22448.70\tabularnewline
-& 2020 & & 18028 & & 9584.81 & 21470.29\tabularnewline
-overall & 2019 & & 17538 & & 66.23 & 7.01\tabularnewline
-& 2020 & & 18028 & & 66.21 & 6.95\tabularnewline
+\rowcolor{gray!6}  value\_eur & 2019 &  & 17538 &  & 2473043.68 & 5674963.22\\
+ & 2020 &  & 18028 &  & 2518484.58 & 5616359.21\\
+\rowcolor{gray!6}  wage\_eur & 2019 &  & 17538 &  & 10085.87 & 22448.70\\
+ & 2020 &  & 18028 &  & 9584.81 & 21470.29\\
+\rowcolor{gray!6}  overall & 2019 &  & 17538 &  & 66.23 & 7.01\\
+ & 2020 &  & 18028 &  & 66.21 & 6.95\\
+\rowcolor{gray!6}  age & 2019 &  & 17538 &  & 25.17 & 4.64\\
+ & 2020 &  & 18028 &  & 25.23 & 4.63\\
+\rowcolor{gray!6}  potential & 2019 &  & 17538 &  & 71.40 & 6.15\\
+ & 2020 &  & 18028 &  & 71.56 & 6.14\\
 \bottomrule
-\end{longtable}
+\end{tabular}
+\end{table}
 
 As one can see in Table \ref{tab:sum} the differences between the
-versions for the most important variables are considerable small. For
-the variable overall NA
+versions for the most important variables are considerable small. From
+2019 to 2020 the mean player \emph{value} (response variable) increased
+by \ensuremath{4.54409\times 10^{4}} which is about 1.8 per cent or 0.01
+standard deviations. Simular results are observabel for the probly most
+importanten righthand variables \emph{wage} and \emph{overall} with a
+difference in the means of -0.02 and -0.003 standard deviations between
+2019 and 2020.
+
+\begin{figure}
+\centering
+\includegraphics{term_paper_bayes_files/figure-latex/fig1-1.pdf}
+\caption{\label{fig:hist_1} Histograms of player values and log player
+values}
+\end{figure}
+
+As you can see in Figure \ref{fig:hist_1} Multikollinarity
 
 \newpage
 

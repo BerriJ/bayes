@@ -18,5 +18,7 @@ pacman::p_load(dplyr,
                dplyr,
                tidyr,
                qwraps2,
-               papeR)
-  
+               papeR,
+               kableExtra,
+               gridExtra,
+               cowplot)

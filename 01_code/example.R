@@ -80,7 +80,7 @@ xtable(des_by_version)
 knitr::kable(des_by_version)
 
 mean(
-  fifa_data%>%filter(year = 2019)%>%select(value_eur)
+  fifa_data%>%filter(year == 2019)%>%select(value_eur)
   )
 
  mean(fifa_data%>%dplyr::select(value_eur) , na.rm = TRUE )
@@ -93,4 +93,77 @@ dim( knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary',
  knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary', 
               col.names = c('', 'year', '', 'N', ' ', 'mean', 'sd' ),
               row.names = FALSE )
+
  
+
+  mean( fifa_data%>%dplyr::filter(year == 2019)%>%dplyr::select(value_eur) , na.rm = TRUE)
+ 
+ class(fifa_data$value_eur )
+
+aa <-  round(mean(fifa_data$value_eur[fifa_data$year ==2020]) -mean(fifa_data$value_eur[fifa_data$year ==2019]),2)  
+
+pro <- aa/mean(fifa_data$value_eur[fifa_data$year ==2020]) 
+ 
+(round(mean(fifa_data$value_eur[fifa_data$year ==2020]) -mean(fifa_data$value_eur[fifa_data$year ==2019]))  / mean(fifa_data$value_eur[fifa_data$year ==2020]),2)  
+ 
+ 
+round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)
+
+round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)
+
+names(fifa_data)
+ 
+(mean(fifa_data$value_eur[fifa_data$year ==2020]) -mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100
+ 
+(mean(fifa_data$value_eur[fifa_data$year ==2020]) -mean(fifa_data$value_eur[fifa_data$year ==2019])) 
+ 
+plot_1 <- ggplot(data = fifa_data%>%filter(year == 2019), aes(value_eur))+
+  geom_histogram(bins = 100, alpha = 0.5)+
+  labs(title = "Histogram of Player Values", x = "Value in Euro", y = "Quantity")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.75))
+
+plot_2 <- ggplot(data = fifa_data%>%filter(year == 2019), aes(log(value_eur)))+
+  geom_histogram(bins = 100, alpha = 0.5)+
+  labs(title = "Histogram of Player Values", x = "Value in Euro", y = "Quantity")+
+  theme_minimal()+
+  theme(plot.title = element_text(hjust = 0.75))
+
+cowplot::plot_grid(plot_1, plot_2, align = "v", nrow = 2, rel_heights = c(1/4, 1/4, 1/2))
+
+
+require(gridExtra)
+
+plot1 <- qplot(1)
+plot2 <- qplot(1)
+cowplot::grid.arrange(arrangeGrob (plot_1, plot_2, ncol=1, nrow=2), heights = c(3,1))
+
+install.packages('cowplot')
+library(cowplot)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+  
