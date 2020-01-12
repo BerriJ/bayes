@@ -172,26 +172,58 @@ test <- fifa_data %>%
 
 ?blasso()
 
-IT <- 10
-BURN <- 50
+IT <- 100
+BURN <- IT *0.5
 
-tic()
-mod <- blasso(train_x, train_y, T = IT , RJ = TRUE, lambda2 = 2 )
-toc()
+initial.beta <- rep(-500, dim(train_x)[2]) # assigning an extreme initial value for all betas
+initial.lambda2 <- 10 # assigning an extreme initial value for lambda (penalty parameter)
+initial.variance <- 500 # assigning an extreme initial value for variance parameter
 
-length(mod$beta)
 
+save(bayes_lasso_fit, file = here::here('04_output/bayes_lasso_fit.RData'))
+
+
+
+load(file = here::here('04_output/bayes_lasso_fit.RData'))
+
+ 
+tictoc::tic()
+bayes_lasso_fit <- blasso(as.matrix(train_x), as.matrix(train_y), 
+              T = IT )
+
+#, RJ = TRUE, 
+          
+              
+#              lambda2 = 10,)
+tictoc::toc()
+
+
+colnames(mod$beta)
+
+AA <- mod$beta
 coef.lasso <- as.data.frame(cbind(iter = seq(IT), 
-                                  beta1 = mod$beta[, "b.1"],
-                                  beta1 = mod$beta[, "b.2"],
-                                  variance = mod$s2, 
-                                  lambda.square = mod$lambda2))
+                                  beta1 = bayes_lasso_fit$beta[, "b.1"],
+                                  beta2 = bayes_lasso_fit$beta[, "b.2"],
+                                  beta3 = bayes_lasso_fit$beta[, "b.3"],
+                                  beta4 = bayes_lasso_fit$beta[, "b.4"],
+                                  beta5 = bayes_lasso_fit$beta[, "b.5"],
+                                  beta6 = bayes_lasso_fit$beta[, "b.6"],
+                                  beta7 = bayes_lasso_fit$beta[, "b.7"],
+                                  beta8 = bayes_lasso_fit$beta[, "b.8"],
+                                  beta9 = bayes_lasso_fit$beta[, "b.9"],
+                                  beta10 = bayes_lasso_fit$beta[, "b.10"],                                  beta9 = mod$beta[, "b.1"],
+                                  beta11 = bayes_lasso_fit$beta[, "b.11"],                                  beta9 = mod$beta[, "b.1"],
+                                  beta12 = bayes_lasso_fit$beta[, "b.12"],
+                                  variance = bayes_lasso_fit$s2, 
+                                  lambda.square = bayes_lasso_fit$lambda2))
 class(coef.lasso$beta1)
 
 s <- summary(mod, burnin = 2)
 
 
 colMedians(coef.lasso[-seq(BURN), -1])
+
+
 
 
 ### normal Lasso 
@@ -207,9 +239,89 @@ sum(coef.glmnet == 0)
 
 fit.lm <- lm(log_value ~ ., data = train)
 
-summary(fit.lm)$coef
+sum(summary(fit.lm)$coef[,4] < 0.05)
+
+aa <- summary(fit.lm)$coef
+
+
+fit.glmnet <-  glmnet::glmnet(as.matrix(train_x), as.matrix(train_y), 
+                      lambda = cv.glmnet(as.matrix(train_x),
+                                         as.matrix(train_y))$lambda.1se, alpha=1)
+
+
+
+
+
+
+
 summary.blasso(mod)
 
 plot.blasso(mod)
 mod$beta
 mod
+
+
+
+
+
+dim(glmnet_coef)
+
+
+
+  
+#prediction LASSO
+
+y_hat_freq_las <- rep(glmnet_coef[1],length(test$log_wage))+
+  glmnet_coef[which(row.names(glmnet_coef) == 'log_wage')]*test$log_wage+ 
+  glmnet_coef[which(row.names(glmnet_coef) == 'age')]*test$age + 
+  glmnet_coef[which(row.names(glmnet_coef) == 'height_cm')]*test$height_cm +
+  glmnet_coef[which(row.names(glmnet_coef) == 'weight_kg')]*test$weight_kg +
+  glmnet_coef[which(row.names(glmnet_coef) == 'overall')]*test$overall +
+  glmnet_coef[which(row.names(glmnet_coef) == 'potential')]*test$potential +
+  glmnet_coef[which(row.names(glmnet_coef) == 'shooting')]*test$shooting +
+  glmnet_coef[which(row.names(glmnet_coef) == 'contract_valid_until')]*test$contract_valid_until +  
+  glmnet_coef[which(row.names(glmnet_coef) == 'pace')]*test$pace +
+  glmnet_coef[which(row.names(glmnet_coef) == 'passing')]*test$passing +
+  glmnet_coef[which(row.names(glmnet_coef) == 'dribbling')]*test$dribbling +    
+  glmnet_coef[which(row.names(glmnet_coef) == 'defending')]*test$defending   
+
+##own RMSE Function
+own_rmse  <-  function(y_hat, y) {
+   rm_se <- sqrt(sum( ( (y_hat - y)^2)/length(y_hat) ))
+   return(rm_se)
+}
+
+own_rmse(y_hat_freq_las, test$log_value)
+
+
+#prediction Bayesian LASSO
+
+HY 
+
+bayes_lasso_fit$beta
+
+rep(glmnet_coef[1],length(test$log_wage))+
+
+    
+  median(bayes_lasso_fit$mu)
+  median(bayes_lasso_fit_hyper$mu)
+
+
+
+  
+y_hat_bay_las_hy <- rep(median(bayes_lasso_fit_hyper$mu), length(test$log_wage))+
+  BA[1,1]*test$log_wage +
+  BA[2,1]*test$age +
+  BA[3,1]*test$height_cm +
+  BA[4,1]**test$weight_kg +
+  BA[5,1]*test$overall +
+  BA[6,1]*test$potential +
+  BA[7,1]*test$shooting +
+  BA[8,1]*test$contract_valid_until +  
+  BA[9,1]*test$pace +
+  BA[10,1]*test$passing +
+  BA[11,1]*test$dribbling +   
+  BA[12,1]*test$defending   
+
+own_rmse(y_hat_bay_las_hy , test$log_value)
+

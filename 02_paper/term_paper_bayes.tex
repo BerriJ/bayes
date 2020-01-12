@@ -280,12 +280,13 @@
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
 
-In recent years, the \ac{LASSO} method of TIBSHIRANI has emerged as an
-alternative to ordinary least squares estimation. The success of the
-method is mainly due to its ability to perform both variable selection
-and estimation. As already Tibshirani pointed out in his original paper
-the standard \ac{LASSO} model can be interpreted as a linear regression
-with a Laplace prior. PARK and CASELLA where the first to implement the
+In recent years, the \ac{LASSO} method of
+\textcite{tibshirani_regression_1996} has emerged as an alternative to
+ordinary least squares estimation. The success of the method is mainly
+due to its ability to perform both variable selection and estimation. As
+already Tibshirani pointed out in his original paper the standard
+\ac{LASSO} model can be interpreted as a linear regression with a
+Laplace prior. PARK and CASELLA where the first to implement the
 Bayesian l\ac{LASSO} \textgreater\textgreater using a conditional
 Laplace prior specification\textless\textless.
 
@@ -332,38 +333,38 @@ neutral the biggest problem of the Bayesian approach because in high
 dimensional problems the computation takes a lot of times or is
 sometimes even not possible. A solution to that is that with newer and
 better computers it is possible to simulate the integrals with a
-\ac{MCMC} method. GHOSH
-
-\newpage
+\ac{MCMC} method. \autocite[p.~100]{ghosh_introduction_2006} PAGE
+NUMBER!! \newpage
 
 \hypertarget{data-description}{%
 \section{Data description}\label{data-description}}
 
 We collected the data from the online database platform \emph{kaggel.}
-\autocite{leone_fifa_2020} ZITATE The dataset included 6 years of data
-for all players which where included in the soccer simulation game
-\emph{FIFA} from \emph{EA Sports}. We dicided to just keep the data for
-2019 and 2020. The Data for 2019 contains 17538 datapoints will be used
-for the estimation of the differen models whereas the 2020 data with
-18028 will be used to compare the quality of the models with an out of
-sample \ac{RMSE}.
+The dataset included 6 years of data for all players which were included
+in the soccer simulation game \emph{FIFA} from \emph{EA Sports}. We
+decided to just keep the data for 2019 and 2020. The Data for 2019
+contains 17538 datapoints will be used for the estimation of the
+different models whereas the 2020 data with 18028 will be used to
+compare the quality of the models with an out of sample \ac{RMSE}. Both
+datasets consist of 104 variables which will not all be included in the
+estimations. Some Variables are just an ID or different length of names
+and URLs. \autocite{leone_fifa_2020}
 
-\textcite{leone_fifa_2020}
-
-A fundamental problem of the data set was that goalkeepers are
+A fundamental problem of the dataset was that goalkeepers are
 systematically rated differently than field players. Therefore, in the
 subcategories of \emph{overall} all field player categories were
-assigned to NAs. Conversely, all field players have NAs in all
-goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot
-handle NAs, they are set to zero for all models.
+assigned NAs for goalkeepers. Conversely, all field players have NAs in
+all goalkeeper categories. Because the algorithm of \ac{LASSO} in R
+cannot handle NAs, they are set to zero for all models.
 
 It is not very realistic that a fielder has no values in the goalkeeper
 categories and vice versa. However, it can be argued, at least for
 outfield players, that goalkeeper attributes play no role in determining
 market values. This argumentation does not seem to hold for goalkeepers,
 at least passing can be assumed to be an influential variable for the
-market value. Nevertheless, due to the lack of alternatives, all NAs
-have been replaced by zero.
+market value, because is an essential asset for the passing game if the
+ball is in the goalkeeper's hands. Nevertheless, due to the lack of
+alternatives, all NAs have been replaced by zero.
 
 \begin{table}[!h]
 
@@ -391,8 +392,8 @@ As one can see in Table \ref{tab:sum} the differences between the
 editions for the most important variables are considerable small. For
 example, from 2019 to 2020 the mean player \emph{value} (response
 variable) increased by 4.54e+04 which is about 1.8 per cent or 0.01
-standard deviations. Simular results are observabel for the probly most
-importanten righthand variables \emph{wage} and \emph{overall} with a
+standard deviations. Similar results are observable for the probably
+most important righthand variables \emph{wage} and \emph{overall} with a
 difference in the means of -0.02 and -0.003 standard deviations between
 2019 and 2020.
 
@@ -405,19 +406,19 @@ values}
 
 As can be seen for the variable value in Figure \ref{fig:hist_1}, this
 relatively strong right-skew is distributed, a similar pattern can be
-observed for the variable wage. Since we also estimate a linear model
+observed for the variable wage. Since we also estimate a linear model,
 and this often leads to non-normally distributed residuals, these were
 logarithmized.
 
 \newpage
 
-\hypertarget{models-used}{%
-\section{Models used}\label{models-used}}
+\hypertarget{used-models}{%
+\section{Used Models}\label{used-models}}
 
 To compare the Bayesian \ac{LASSO} we will analyse the data also with a
 linear multivariate model, and the frequentist \ac{LASSO}. We wil start
 with the linear model and will modifie the model equations step by step
-forward the bayesian version.
+forwards the bayesian version.
 
 \hypertarget{linear-model}{%
 \subsection{Linear Model}\label{linear-model}}
@@ -463,7 +464,7 @@ for some \(\lambda \geq 0\). This method is also often referred to as
 Already in his original paper \textcite{tibshirani_regression_1996} has
 pointed out the possibility that his methods can also be interpreted
 Bayesian. The LASSO estimates can be considered as posterior mode
-estimates with a double-exponential Laplace prior .
+estimates with a double-exponential Laplace prior.
 
 \hypertarget{bayesian-lasso}{%
 \subsection{Bayesian Lasso}\label{bayesian-lasso}}
@@ -473,21 +474,160 @@ a conditional Laplace prior of the form
 
 \begin{align} 
 \label{eq:la_bay_prior}
- \pi \left( \beta | \sigma^2 \right)   = \prod_{j = 1}^{p} \dfrac{\lambda}{2 \sqrt{\sigma^e}} e^{\dfrac{- \lambda |\beta_j |}{\sqrt{\sigma^2}}} 
+ \pi \left( \pmb{\beta} | \sigma^2 \right)   = \prod_{j = 1}^{p} \dfrac{\lambda}{2 \sqrt{\sigma^e}} e^{\dfrac{- \lambda |\beta_j |}{\sqrt{\sigma^2}}} 
 \end{align}
 
 \autocite{park_bayesian_2008}
 
-\hypertarget{gibbs-sampler}{%
-\subsubsection{Gibbs Sampler}\label{gibbs-sampler}}
+\hypertarget{gibbs-sampler-and-the-full-model-specification}{%
+\subsubsection{Gibbs Sampler and the full Model
+specification}\label{gibbs-sampler-and-the-full-model-specification}}
 
-\hypertarget{estimation-of-the-bayesian-lasso}{%
-\section{Estimation of the Bayesian
-Lasso}\label{estimation-of-the-bayesian-lasso}}
+The Gibbs Sampler is a special case of an \ac{MCMC} algorithm, which is
+useful to approximate the combianed distribution of two or more
+regressors in a multidemsinoal problem.
 
-\hypertarget{posteriod-based-estimation-and-prediction}{%
-\section{Posteriod-based Estimation and
-prediction}\label{posteriod-based-estimation-and-prediction}}
+The algortithm tries to find the approximate joint distribution and
+therefore the algortihm runs through the subvectors \(\beta\) and draws
+ach subset conditional on all other values.
+\autocite{gelman_bayesian_2004}
+
+Bayesian \ac{LASSO} the Gibbs sampler in the \textbf{monomvn} package in
+\textbf{R} {[}gramacy\_monomvn\_2019{]} samples from the following
+representation of the Laplace distribution
+
+\begin{align} 
+\label{eq:gibbs}
+  \dfrac{a}{2}e^{-a |z|} = \int_{0}^{\infty} \dfrac{1}{2 \sqrt{\sigma^2}} e^{ -z^2 / (2s)} \; \dfrac{a^2}{2} e^{ -a^2 s /2} ds, \qquad a > 0 
+\end{align}
+
+\textcite{andrews_scale_1974}
+
+The full model has the following hierarchical representation
+
+\begin{align} 
+\label{eq:hier}
+  \pmb{y|\mu}, \pmb{X}, \pmb{\beta}, \sigma^2 & \sim N_n (\mu \pmb{1}_n + \pmb{X \beta}, \sigma^2  \pmb{I}_n)   \nonumber\\
+  \pmb{\beta} | \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim N_p (\pmb{0}_p , \sigma^2 \pmb{D}_{\tau}) \nonumber \\
+  \pmb{D}_{\tau} & = diag(\tau^2_1 , \ldots , \tau^2_p)\\
+  \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim \pi \left( \sigma^2 \right) d \sigma^2 \prod_{j = 1}^{p} \dfrac{\lambda^2}{2}e^{- \lambda^2 \tau^2_j /2} d \tau^2_j \nonumber \\
+  \sigma^2, \tau^2_1 , \ldots , \tau^2_p & > 0 \nonumber \\
+\end{align}
+
+If \(\tau^2_1 , \ldots , \tau^2_p\) gets integreted out of the
+conditional prior on \(\pmb{\beta}\) , we get the form of
+\eqref{eq:la_bay_prior}. For \(\sigma^2\) the inverse-gamma function of
+the form \(\pi \left( \sigma^2 \right) = \dfrac{1}{\sigma^2}\) was
+implemented in the \textbf{monomvn} package.
+
+\hypertarget{estimation-of-the-models}{%
+\section{Estimation of the Models}\label{estimation-of-the-models}}
+
+\begin{table}[!h]
+
+\caption{\label{tab:unnamed-chunk-4}\label{tab:sum_lm} Summary of the linear model}
+\centering
+\begin{tabular}[t]{lrrrr}
+\toprule
+  & Estimate & Std. Error & t value & Pr(>|t|)\\
+\midrule
+\rowcolor{gray!6}  (Intercept) & -8.5970 & 2.9222 & -2.9420 & 0.0033\\
+log\_wage & 0.0679 & 0.0025 & 26.8466 & 0.0000\\
+\rowcolor{gray!6}  age & -0.1004 & 0.0008 & -119.6665 & 0.0000\\
+height\_cm & 0.0012 & 0.0004 & 2.7140 & 0.0067\\
+\rowcolor{gray!6}  weight\_kg & 0.0001 & 0.0004 & 0.3175 & 0.7508\\
+overall & 0.2098 & 0.0008 & 266.5231 & 0.0000\\
+\rowcolor{gray!6}  potential & -0.0059 & 0.0007 & -8.1962 & 0.0000\\
+shooting & 0.0049 & 0.0003 & 17.7691 & 0.0000\\
+\rowcolor{gray!6}  contract\_valid\_until & 0.0051 & 0.0014 & 3.5164 & 0.0004\\
+pace & 0.0008 & 0.0002 & 3.6118 & 0.0003\\
+\rowcolor{gray!6}  passing & 0.0019 & 0.0004 & 4.5131 & 0.0000\\
+dribbling & -0.0016 & 0.0005 & -3.4678 & 0.0005\\
+\rowcolor{gray!6}  defending & -0.0017 & 0.0002 & -10.6851 & 0.0000\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-5}\label{tab:sum_lasso} Summary of the LASSO }
+\centering
+\begin{tabular}[t]{ll}
+\toprule
+  & Estimate\\
+\midrule
+\rowcolor{gray!6}  (Intercept) & 1.72337\\
+log\_wage & 0.066023\\
+\rowcolor{gray!6}  age & -0.089616\\
+height\_cm & -\\
+\rowcolor{gray!6}  weight\_kg & -\\
+overall & 0.200689\\
+\rowcolor{gray!6}  potential & 0.001541\\
+shooting & 0.004659\\
+\rowcolor{gray!6}  contract\_valid\_until & -\\
+pace & -\\
+\rowcolor{gray!6}  passing & -\\
+dribbling & -\\
+\rowcolor{gray!6}  defending & -0.000213\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-6}\label{tab:sum_bay} Summary of the Bayesian LASSO }
+\centering
+\begin{tabular}[t]{lrrr}
+\toprule
+  & median & 2.5\% & 97.5\%\\
+\midrule
+\rowcolor{gray!6}  log\_wage & 0.067554 & 0.063834 & 0.071904\\
+age & -0.100611 & -0.102215 & -0.098671\\
+\rowcolor{gray!6}  height\_cm & 0.001264 & 0.000000 & 0.002029\\
+weight\_kg & 0.000000 & 0.000000 & 0.000000\\
+\rowcolor{gray!6}  overall & 0.209992 & 0.208272 & 0.211500\\
+potential & -0.006020 & -0.007445 & -0.004492\\
+\rowcolor{gray!6}  shooting & 0.004856 & 0.004186 & 0.005391\\
+contract\_valid\_until & 0.004777 & 0.000000 & 0.008346\\
+\rowcolor{gray!6}  pace & 0.000714 & 0.000000 & 0.001135\\
+passing & 0.001771 & 0.000000 & 0.002559\\
+\rowcolor{gray!6}  dribbling & -0.001549 & -0.002438 & 0.000000\\
+defending & -0.001596 & -0.001960 & -0.001072\\
+\rowcolor{gray!6}  variance & 0.057742 & 0.056657 & 0.058963\\
+lambda.square & 0.000124 & 0.000037 & 0.000356\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+
+\caption{\label{tab:unnamed-chunk-7}\label{tab:sum_bay_hy} Summary of the  Bayessian LASSO with hyperpriors}
+\centering
+\begin{tabular}[t]{lrrr}
+\toprule
+  & median & 2.5\% & 97.5\%\\
+\midrule
+\rowcolor{gray!6}  beta1 & 0.067405 & 0.061796 & 0.072935\\
+beta2 & -0.100695 & -0.102174 & -0.099112\\
+\rowcolor{gray!6}  beta3 & 0.001274 & 0.000000 & 0.002045\\
+beta4 & 0.000000 & 0.000000 & 0.000446\\
+\rowcolor{gray!6}  beta5 & 0.209832 & 0.208392 & 0.211174\\
+beta6 & -0.005893 & -0.007389 & -0.004306\\
+\rowcolor{gray!6}  beta7 & 0.004792 & 0.004169 & 0.005301\\
+beta8 & 0.004703 & 0.000000 & 0.007556\\
+\rowcolor{gray!6}  beta9 & 0.000497 & 0.000000 & 0.001049\\
+beta10 & 0.001454 & 0.000000 & 0.002508\\
+\rowcolor{gray!6}  beta11 & -0.000977 & -0.002296 & 0.000000\\
+beta12 & -0.001553 & -0.001958 & -0.001094\\
+\rowcolor{gray!6}  variance & 0.057671 & 0.056589 & 0.058846\\
+lambda.square & 0.000087 & 0.000028 & 0.000340\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\hypertarget{parameter-results-and-posteriod-based-prediction}{%
+\section{Parameter Results and (Posteriod-based)
+prediction}\label{parameter-results-and-posteriod-based-prediction}}
 
 \hypertarget{residuals-and-sensitive-analysis}{%
 \section{Residuals and Sensitive

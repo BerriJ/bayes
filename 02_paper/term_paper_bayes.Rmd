@@ -51,7 +51,7 @@ source("packages/packages.R")
 
 # Introduction
 
-In recent years, the \ac{LASSO} method of TIBSHIRANI has emerged as an alternative to ordinary least squares estimation. The success of the method is mainly due to its ability to perform both variable selection and estimation. As already Tibshirani pointed out in his original paper the standard \ac{LASSO} model can be interpreted as a linear regression with a Laplace prior. PARK and CASELLA  where the first to implement the Bayesian l\ac{LASSO} >>using a conditional Laplace prior specification<<.
+In recent years, the \ac{LASSO} method of @tibshirani_regression_1996 has emerged as an alternative to ordinary least squares estimation. The success of the method is mainly due to its ability to perform both variable selection and estimation. As already Tibshirani pointed out in his original paper the standard \ac{LASSO} model can be interpreted as a linear regression with a Laplace prior. PARK and CASELLA  where the first to implement the Bayesian l\ac{LASSO} >>using a conditional Laplace prior specification<<.
 
 Our goal is to compare the result of the Bayesian \ac{LASSO} with normal \ac{LASSO} method and an ordinary least square estimation. The focus is particularly on the number of non-significant parameters in the linear model or, in case of the \acp{LASSO} the parameters equal to zero.  
 
@@ -73,8 +73,7 @@ For Bayesian statistics the event theorem gets \eqref{eq:bayes_theorem} rewritte
   \pi (\theta | y) = \dfrac{f(y | \theta) \pi(\theta)}{f(y)}
 \end{align}
 
-From \eqref{eq:bayes_dens} the advantages and disadvantages of Bayesian statistics compared to frequentist statistics can directly be retrieved. One major adavantage is that the Bayesian approach can account for prior knowledge and points out a philosophical difference to the frequentist approach - that the obtained data stands not alone. Another, key difference and advantage is that in the Bayesian world the computation are made with distributions and this leads to a better information level than just the computation of the first and second moment. The computation of distributions are also the greatest disadvantages or more neutral the biggest problem of the Bayesian approach because in high dimensional problems the computation takes a lot of times or is sometimes even not possible. A solution to that is that with newer and better computers it is possible to simulate the integrals with a \ac{MCMC} method. GHOSH      
-
+From \eqref{eq:bayes_dens} the advantages and disadvantages of Bayesian statistics compared to frequentist statistics can directly be retrieved. One major adavantage is that the Bayesian approach can account for prior knowledge and points out a philosophical difference to the frequentist approach - that the obtained data stands not alone. Another, key difference and advantage is that in the Bayesian world the computation are made with distributions and this leads to a better information level than just the computation of the first and second moment. The computation of distributions are also the greatest disadvantages or more neutral the biggest problem of the Bayesian approach because in high dimensional problems the computation takes a lot of times or is sometimes even not possible. A solution to that is that with newer and better computers it is possible to simulate the integrals with a \ac{MCMC} method.  [@ghosh_introduction_2006, p. 100] PAGE NUMBER!! 
 \newpage
 
 # Data description 
@@ -156,22 +155,33 @@ train <- fifa_data %>%
   dplyr::select(vars)%>%
   imputeTS::na_replace(., 0) # replace the NA's  (Bayesian) lasso can not handle NA's
 
+train_y <- train%>%
+  dplyr::select(log_value)
+
+train_x <- train %>%
+  dplyr::select(-log_value)
+
 
 test <- fifa_data %>%
   dplyr::filter(year == 2020)%>%
   dplyr::select(vars)%>%
   imputeTS::na_replace(., 0)
 
+test_y <- test%>%
+  dplyr::select(log_value)
+
+test_x <- test %>%
+  dplyr::select(-log_value)
+
+
 ```
 
 
-We collected the data from the online database platform _kaggel._ [@leone_fifa_2020] ZITATE The dataset included  6 years of data for all players which where included in the soccer simulation game _FIFA_  from _EA Sports_. We dicided to just keep the data for 2019 and 2020.  The Data for 2019 contains  `r length(fifa_data$value_eur[fifa_data$year == 2019])` datapoints  will be used  for the estimation of the differen models whereas the 2020 data with `r length(fifa_data$value_eur[fifa_data$year == 2020])` will be used to compare the quality of the models with an out of sample \ac{RMSE}. 
+We collected the data from the online database platform _kaggel._   The dataset included  6 years of data for all players which were included in the soccer simulation game _FIFA_  from _EA Sports_. We decided to just keep the data for 2019 and 2020.  The Data for 2019 contains  `r length(fifa_data$value_eur[fifa_data$year == 2019])` datapoints  will be used  for the estimation of the different models whereas the 2020 data with `r length(fifa_data$value_eur[fifa_data$year == 2020])` will be used to compare the quality of the models with an out of sample \ac{RMSE}. Both datasets consist of `r unique(dim(data_19)[[2]], dim(data_20)[[2]]) ` variables which will not all be included in the estimations. Some Variables are just an ID or different length of names and URLs. [@leone_fifa_2020]
 
-@leone_fifa_2020
+A fundamental problem of the dataset was that goalkeepers are systematically rated differently than field players. Therefore, in the subcategories of _overall_ all field player categories were assigned NAs for goalkeepers. Conversely, all field players have NAs in all goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot handle NAs, they are set to zero for all models. 
 
-A fundamental problem of the data set was that goalkeepers are systematically rated differently than field players. Therefore, in the subcategories of _overall_ all field player categories were assigned to NAs. Conversely, all field players have NAs in all goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot handle NAs, they are set to zero for all models. 
-
-It is not very realistic that a fielder has no values in the goalkeeper categories and vice versa. However, it can be argued, at least for outfield players, that goalkeeper attributes play no role in determining market values. This argumentation does not seem to hold for goalkeepers, at least passing can be assumed to be an influential variable for the market value. Nevertheless,  due to the lack of alternatives, all NAs have been replaced by zero.  
+It is not very realistic that a fielder has no values in the goalkeeper categories and vice versa. However, it can be argued, at least for outfield players, that goalkeeper attributes play no role in determining market values. This argumentation does not seem to hold for goalkeepers, at least passing can be assumed to be an influential variable for the market value, because is an essential asset for the passing game if the ball is in the goalkeeper's hands. Nevertheless, due to the lack of alternatives, all NAs have been replaced by zero.  
 
 
 
@@ -188,7 +198,7 @@ knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary of some im
 
 ```
 
-As one can see in Table \ref{tab:sum} the differences between the editions for the most important variables are considerable small. For example,  from 2019 to 2020 the mean player _value_ (response variable) increased by `r scales::scientific(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), digits = 3)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Simular results are observabel for the probly most importanten righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
+As one can see in Table \ref{tab:sum} the differences between the editions for the most important variables are considerable small. For example,  from 2019 to 2020 the mean player _value_ (response variable) increased by `r scales::scientific(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), digits = 3)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Similar results are observable for the probably most important righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
 
 ```{r , fig1, echo = FALSE, fig.cap = " \\label{fig:hist_1} Histograms of player values and log player values"}
 
@@ -209,14 +219,14 @@ plot_grid(plot_1, plot_2, align = "v", nrow = 2, rel_heights = c(1/4, 1/4, 1/2))
 ```
 
 
-As can be seen for the variable value in Figure \ref{fig:hist_1}, this relatively strong right-skew is distributed, a similar pattern can be observed for the variable wage. Since we also estimate a linear model and this often leads to non-normally distributed residuals, these were logarithmized.
+As can be seen for the variable value in Figure \ref{fig:hist_1}, this relatively strong right-skew is distributed, a similar pattern can be observed for the variable wage. Since we also estimate a linear model, and this often leads to non-normally distributed residuals, these were logarithmized.
 
 
 \newpage
 
-# Models used
+# Used Models
 
-To compare the Bayesian \ac{LASSO} we will analyse the data also with a linear multivariate model, and the frequentist \ac{LASSO}. We wil start with the linear model and will modifie the model equations step by step forward the bayesian version. 
+To compare the Bayesian \ac{LASSO} we will analyse the data also with a linear multivariate model, and the frequentist \ac{LASSO}. We wil start with the linear model and will modifie the model equations step by step forwards the bayesian version. 
 
 
 ## Linear Model
@@ -251,7 +261,7 @@ In the \ac{LASSO} method the model equation is the same as the equation for the 
 
 for some $\lambda \geq 0$. This method is also often referred to as $L_1$ -penalized least squares estimation.  
 
-Already in his original paper @tibshirani_regression_1996 has pointed out the possibility that his methods can also be interpreted Bayesian. The LASSO estimates can be considered as posterior mode estimates with a double-exponential Laplace prior .
+Already in his original paper @tibshirani_regression_1996 has pointed out the possibility that his methods can also be interpreted Bayesian. The LASSO estimates can be considered as posterior mode estimates with a double-exponential Laplace prior.
 
 <!-- (e.g., Figueiredo 2003; Bae and Mallick 2004; Yuan and Lin 2005-->
 
@@ -262,19 +272,214 @@ Already in his original paper @tibshirani_regression_1996 has pointed out the po
 
 \begin{align} 
 \label{eq:la_bay_prior}
- \pi \left( \beta | \sigma^2 \right)   = \prod_{j = 1}^{p} \dfrac{\lambda}{2 \sqrt{\sigma^e}} e^{\dfrac{- \lambda |\beta_j |}{\sqrt{\sigma^2}}} 
+ \pi \left( \pmb{\beta} | \sigma^2 \right)   = \prod_{j = 1}^{p} \dfrac{\lambda}{2 \sqrt{\sigma^e}} e^{\dfrac{- \lambda |\beta_j |}{\sqrt{\sigma^2}}} 
 \end{align}
-
-
 
 [@park_bayesian_2008]
 
-### Gibbs Sampler
+### Gibbs Sampler and the full Model specification
+
+The Gibbs Sampler is a special case of an \ac{MCMC} algorithm, which is useful to approximate the combianed distribution of two or more regressors in a multidemsinoal problem. 
+
+The algortithm tries to find the approximate joint distribution and therefore the algortihm runs through the subvectors $\beta$ and draws ach subset conditional on all other values. [@gelman_bayesian_2004]
 
 
-# Estimation of the Bayesian Lasso 
+Bayesian \ac{LASSO} the Gibbs sampler in the __monomvn__ package in __R__ [gramacy_monomvn_2019] samples from the following representation of the Laplace distribution 
 
-# Posteriod-based Estimation and prediction 
+\begin{align} 
+\label{eq:gibbs}
+  \dfrac{a}{2}e^{-a |z|} = \int_{0}^{\infty} \dfrac{1}{2 \sqrt{\sigma^2}} e^{ -z^2 / (2s)} \; \dfrac{a^2}{2} e^{ -a^2 s /2} ds, \qquad a > 0 
+\end{align}
+
+@andrews_scale_1974
+
+The full model has the following hierarchical representation
+
+\begin{align} 
+\label{eq:hier}
+  \pmb{y|\mu}, \pmb{X}, \pmb{\beta}, \sigma^2 & \sim N_n (\mu \pmb{1}_n + \pmb{X \beta}, \sigma^2  \pmb{I}_n)   \nonumber\\
+  \pmb{\beta} | \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim N_p (\pmb{0}_p , \sigma^2 \pmb{D}_{\tau}) \nonumber \\
+  \pmb{D}_{\tau} & = diag(\tau^2_1 , \ldots , \tau^2_p)\\
+  \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim \pi \left( \sigma^2 \right) d \sigma^2 \prod_{j = 1}^{p} \dfrac{\lambda^2}{2}e^{- \lambda^2 \tau^2_j /2} d \tau^2_j \nonumber \\
+  \sigma^2, \tau^2_1 , \ldots , \tau^2_p & > 0 \nonumber \\
+\end{align}
+
+If $\tau^2_1 , \ldots , \tau^2_p$ gets integreted out of the conditional prior on $\pmb{\beta}$ , we get the form of \eqref{eq:la_bay_prior}. For $\sigma^2$ the inverse-gamma function of the form $\pi \left( \sigma^2 \right) = \dfrac{1}{\sigma^2}$ was implemented in the __monomvn__ package.    
+
+
+# Estimation of the Models  
+
+
+
+```{r , echo = FALSE}
+
+# the estimation of the models are in a seperate file, so that the compilation does not take to long, the models were stored in an additional file
+
+######### linear model
+
+#source("01_code/lm.R")
+
+load(file = here::here('04_output/fit_lm.RData'))
+
+
+knitr::kable(summary(fit_lm)$coef, digits = 4, caption = '\\label{tab:sum_lm} Summary of the linear model', format.args = list(decimal.mark = '.', big.mark = " "),   booktabs = TRUE, linesep = "")%>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+#sum(summary(fit_lm)$coef[,4] > 0.05)
+```
+
+```{r , echo = FALSE}
+ #### freq LASSO ####
+
+ #source("01_code/glmnet.R")
+
+ load(file = here::here('04_output/glmnet_lm.RData'))
+
+ glmnet_coef <- as.matrix(coef(glmnet_fit))
+
+ glmnet_coef_k <- round(glmnet_coef,6)
+ glmnet_coef_k[glmnet_coef_k == 0] <- '-'
+
+
+ knitr::kable(glmnet_coef_k, digits = 6, caption = '\\label{tab:sum_lasso} Summary of the LASSO ', format.args = list(decimal.mark = '.', big.mark = " "),  col.names = c('Estimate'),  booktabs = TRUE, linesep = "")%>%
+   kable_styling(latex_options = c("striped"))#, "hold_position"))
+
+# sum(glmnet_coef == 0)
+```
+
+
+```{r , echo = FALSE}
+ ###### bayes LASSO ####
+
+#source("01_code/bayes.R")
+load(file = here::here('04_output/bayes_lasso_fit.RData'))
+
+coef_lasso <- as.data.frame(cbind(beta1 = bayes_lasso_fit$beta[, "b.1"],
+                                  beta2 = bayes_lasso_fit$beta[, "b.2"],
+                                   beta3 = bayes_lasso_fit$beta[, "b.3"],
+                                   beta4 = bayes_lasso_fit$beta[, "b.4"],
+                                   beta5 = bayes_lasso_fit$beta[, "b.5"],
+                                   beta6 = bayes_lasso_fit$beta[, "b.6"],
+                                   beta7 = bayes_lasso_fit$beta[, "b.7"],
+                                   beta8 = bayes_lasso_fit$beta[, "b.8"],
+                                   beta9 = bayes_lasso_fit$beta[, "b.9"],
+                                   beta10 = bayes_lasso_fit$beta[, "b.10"],                                                      beta11 = bayes_lasso_fit$beta[, "b.11"],
+                                   beta12 = bayes_lasso_fit$beta[, "b.12"],
+                                   variance = bayes_lasso_fit$s2,
+                                   lambda.square = bayes_lasso_fit$lambda2))
+
+ coef_lasso_hyper <- as.data.frame(cbind(beta1 = bayes_lasso_fit_hyper$beta[, "b.1"],
+                                   beta2 = bayes_lasso_fit_hyper$beta[, "b.2"],
+                                   beta3 = bayes_lasso_fit_hyper$beta[, "b.3"],
+                                   beta4 = bayes_lasso_fit_hyper$beta[, "b.4"],
+                                   beta5 = bayes_lasso_fit_hyper$beta[, "b.5"],
+                                   beta6 = bayes_lasso_fit_hyper$beta[, "b.6"],
+                                   beta7 = bayes_lasso_fit_hyper$beta[, "b.7"],
+                                   beta8 = bayes_lasso_fit_hyper$beta[, "b.8"],
+                                   beta9 = bayes_lasso_fit_hyper$beta[, "b.9"],
+                                   beta10 = bayes_lasso_fit_hyper$beta[, "b.10"],
+                                   beta11 = bayes_lasso_fit_hyper$beta[, "b.11"],
+                                   beta12 = bayes_lasso_fit_hyper$beta[, "b.12"],
+                                   variance = bayes_lasso_fit_hyper$s2,
+                                   lambda.square = bayes_lasso_fit_hyper$lambda2))
+
+ BA <- cbind(colMedians(coef_lasso),
+ matrixStats::colQuantiles(as.matrix(coef_lasso), probs = c(0.025, 0.975)))
+ colnames(BA)[1] <- 'median'
+ rownames(BA)[1:12] <- rownames(glmnet_coef_k)[2:13]
+
+
+ knitr::kable(BA, digits = 6, caption = '\\label{tab:sum_bay} Summary of the Bayesian LASSO ', format.args = list(decimal.mark = '.', big.mark = " "),  booktabs = TRUE, linesep = "")%>%
+   kable_styling(latex_options = c("striped"))#, "hold_position"))
+
+# sum(BA[,2] * BA[,3] <= 0)
+
+```
+
+
+```{r , echo = FALSE}
+ HY <- cbind(colMedians(coef_lasso_hyper),
+ matrixStats::colQuantiles(as.matrix(coef_lasso_hyper), probs = c(0.025, 0.975)))
+ colnames(HY)[1] <- 'median'
+ 
+ knitr::kable(HY, digits = 6, caption = '\\label{tab:sum_bay_hy} Summary of the  Bayessian LASSO with hyperpriors', format.args = list(decimal.mark = '.', big.mark = " "),  booktabs = TRUE, linesep = "")%>%
+   kable_styling(latex_options = c("striped")) #, "hold_position"))
+
+# sum(HY[,2] * HY[,3] <= 0)
+```
+
+
+```{r, echo = FALSE}
+rmse_lm <-modelr::rmse(fit_lm, test)
+
+##own RMSE Function
+own_rmse  <-  function(y_hat, y) {
+   rm_se <- sqrt(sum( ( (y_hat - y)^2)/length(y_hat) ))
+   return(rm_se)
+}
+
+
+### predicting y_hat LASSO
+
+#prediction LASSO
+
+y_hat_freq_las <- rep(glmnet_coef[1],length(test$log_wage))+
+  glmnet_coef[which(row.names(glmnet_coef) == 'log_wage')]*test$log_wage+ 
+  glmnet_coef[which(row.names(glmnet_coef) == 'age')]*test$age + 
+  glmnet_coef[which(row.names(glmnet_coef) == 'height_cm')]*test$height_cm +
+  glmnet_coef[which(row.names(glmnet_coef) == 'weight_kg')]*test$weight_kg +
+  glmnet_coef[which(row.names(glmnet_coef) == 'overall')]*test$overall +
+  glmnet_coef[which(row.names(glmnet_coef) == 'potential')]*test$potential +
+  glmnet_coef[which(row.names(glmnet_coef) == 'shooting')]*test$shooting +
+  glmnet_coef[which(row.names(glmnet_coef) == 'contract_valid_until')]*test$contract_valid_until +  
+  glmnet_coef[which(row.names(glmnet_coef) == 'pace')]*test$pace +
+  glmnet_coef[which(row.names(glmnet_coef) == 'passing')]*test$passing +
+  glmnet_coef[which(row.names(glmnet_coef) == 'dribbling')]*test$dribbling +    
+  glmnet_coef[which(row.names(glmnet_coef) == 'defending')]*test$defending   
+
+rmse_freq_las <- own_rmse(y_hat_freq_las, test$log_value)
+
+
+
+###predicting Bayesian Lasso
+
+y_hat_bay_las <- rep(median(bayes_lasso_fit$mu), length(test$log_wage))+
+  HY[1,1]*test$log_wage +
+  HY[2,1]*test$age +
+  HY[3,1]*test$height_cm +
+  HY[4,1]**test$weight_kg +
+  HY[5,1]*test$overall +
+  HY[6,1]*test$potential +
+  HY[7,1]*test$shooting +
+  HY[8,1]*test$contract_valid_until +  
+  HY[9,1]*test$pace +
+  HY[10,1]*test$passing +
+  HY[11,1]*test$dribbling +   
+  HY[12,1]*test$defending   
+
+rmse_bay_las <- own_rmse(y_hat_bay_las , test$log_value)
+
+###predicting Bayesian Lasso with hyper perameter
+
+y_hat_bay_las_hy <- rep(median(bayes_lasso_fit_hyper$mu), length(test$log_wage))+
+  BA[1,1]*test$log_wage +
+  BA[2,1]*test$age +
+  BA[3,1]*test$height_cm +
+  BA[4,1]**test$weight_kg +
+  BA[5,1]*test$overall +
+  BA[6,1]*test$potential +
+  BA[7,1]*test$shooting +
+  BA[8,1]*test$contract_valid_until +  
+  BA[9,1]*test$pace +
+  BA[10,1]*test$passing +
+  BA[11,1]*test$dribbling +   
+  BA[12,1]*test$defending   
+
+rmse_bay_las_hyp <- own_rmse(y_hat_bay_las_hy , test$log_value)
+
+```
+
+# Parameter Results  and (Posteriod-based) prediction 
 
 # Residuals and Sensitive Analysis 
 
