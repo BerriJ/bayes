@@ -1,6 +1,7 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage{lmodern}
 
+\usepackage{placeins}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
 \usepackage{fixltx2e} % provides \textsubscript
@@ -258,6 +259,7 @@
 \begin{acronym}[dummyyyy]
  \acro{bagging}{Bootstrap Aggregation}
  \acro{LASSO}{Least Absolute Shrinkage and Selection Operator}
+ \acro{OLS}{(ordinary least squares}
  \acro{pcr}{Principal Components Regression}
  \acro{pls}{Partial Least Squares}
  \acro{RMSE}{Root Mean Squared Error}
@@ -276,7 +278,8 @@
 \restoregeometry
 
 \newpage
-\pagenumbering{arabic}
+\pagenumbering{arabic} %Roman arabic
+
 \hypertarget{introduction}{%
 \section{Introduction}\label{introduction}}
 
@@ -286,9 +289,9 @@ ordinary least squares estimation. The success of the method is mainly
 due to its ability to perform both variable selection and estimation. As
 already Tibshirani pointed out in his original paper the standard
 \ac{LASSO} model can be interpreted as a linear regression with a
-Laplace prior. PARK and CASELLA where the first to implement the
-Bayesian l\ac{LASSO} \textgreater\textgreater using a conditional
-Laplace prior specification\textless\textless.
+Laplace prior. \textcite{park_bayesian_2008} where the first to
+implement the Bayesian l\ac{LASSO} \textgreater\textgreater using a
+conditional Laplace prior specification\textless\textless.
 
 Our goal is to compare the result of the Bayesian \ac{LASSO} with normal
 \ac{LASSO} method and an ordinary least square estimation. The focus is
@@ -322,13 +325,13 @@ is the posterior distribution, we then get the following.
 
 From \eqref{eq:bayes_dens} the advantages and disadvantages of Bayesian
 statistics compared to frequentist statistics can directly be retrieved.
-One major adavantage is that the Bayesian approach can account for prior
+One major advantage is that the Bayesian approach can account for prior
 knowledge and points out a philosophical difference to the frequentist
 approach - that the obtained data stands not alone. Another, key
-difference and advantage is that in the Bayesian world the computation
+difference and advantage is that in the Bayesian world the computations
 are made with distributions and this leads to a better information level
 than just the computation of the first and second moment. The
-computation of distributions are also the greatest disadvantages or more
+computation of distributions is also the greatest disadvantages or more
 neutral the biggest problem of the Bayesian approach because in high
 dimensional problems the computation takes a lot of times or is
 sometimes even not possible. A solution to that is that with newer and
@@ -340,22 +343,22 @@ NUMBER!! \newpage
 \section{Data description}\label{data-description}}
 
 We collected the data from the online database platform \emph{kaggel.}
-The dataset included 6 years of data for all players which were included
+The dataset includes 6 years of data for all players who were included
 in the soccer simulation game \emph{FIFA} from \emph{EA Sports}. We
-decided to just keep the data for 2019 and 2020. The Data for 2019
-contains 17538 datapoints will be used for the estimation of the
+decided to keep the data for 2019 and 2020, only. The Data for 2019
+contains 17538 datapoints which will be used for the estimation of the
 different models whereas the 2020 data with 18028 will be used to
 compare the quality of the models with an out of sample \ac{RMSE}. Both
 datasets consist of 104 variables which will not all be included in the
 estimations. Some Variables are just an ID or different length of names
 and URLs. \autocite{leone_fifa_2020}
 
-A fundamental problem of the dataset was that goalkeepers are
+A fundamental problem of the dataset consists as goalkeepers are
 systematically rated differently than field players. Therefore, in the
-subcategories of \emph{overall} all field player categories were
-assigned NAs for goalkeepers. Conversely, all field players have NAs in
-all goalkeeper categories. Because the algorithm of \ac{LASSO} in R
-cannot handle NAs, they are set to zero for all models.
+subcategories of the variable \emph{overall} all field player categories
+were assigned NAs for goalkeepers. Conversely, all field players have
+NAs in all goalkeeper categories. Because the algorithm of \ac{LASSO} in
+R cannot handle NAs they have been set to zero for all models.
 
 It is not very realistic that a fielder has no values in the goalkeeper
 categories and vice versa. However, it can be argued, at least for
@@ -363,12 +366,12 @@ outfield players, that goalkeeper attributes play no role in determining
 market values. This argumentation does not seem to hold for goalkeepers,
 at least passing can be assumed to be an influential variable for the
 market value, because is an essential asset for the passing game if the
-ball is in the goalkeeper's hands. Nevertheless, due to the lack of
-alternatives, all NAs have been replaced by zero.
+goalkeeper has possession of the ball. Nevertheless, due to the lack of
+alternatives, all NAs have been replaced by Zero.
 
 \begin{table}[!h]
 
-\caption{\label{tab:unnamed-chunk-3}\label{tab:sum} Summary of some important variables for the 2019 FIFA edition}
+\caption{\label{tab:data}\label{tab:sum} Summary of some important variables for the 2019 FIFA edition}
 \centering
 \begin{tabular}[t]{lllrlrr}
 \toprule
@@ -389,7 +392,7 @@ alternatives, all NAs have been replaced by zero.
 \end{table}
 
 As one can see in Table \ref{tab:sum} the differences between the
-editions for the most important variables are considerable small. For
+editions for the most important variables are considerably small. For
 example, from 2019 to 2020 the mean player \emph{value} (response
 variable) increased by 4.54e+04 which is about 1.8 per cent or 0.01
 standard deviations. Similar results are observable for the probably
@@ -493,7 +496,7 @@ ach subset conditional on all other values.
 \autocite{gelman_bayesian_2004}
 
 Bayesian \ac{LASSO} the Gibbs sampler in the \textbf{monomvn} package in
-\textbf{R} {[}gramacy\_monomvn\_2019{]} samples from the following
+\textbf{R} \autocite{gramacy_monomvn_2019} samples from the following
 representation of the Laplace distribution
 
 \begin{align} 
@@ -523,9 +526,21 @@ implemented in the \textbf{monomvn} package.
 \hypertarget{estimation-of-the-models}{%
 \section{Estimation of the Models}\label{estimation-of-the-models}}
 
+To compare the performances of the models all three models got,
+obviously, estimated with the same regressors. We included as righthand
+variables: \emph{log\_wage} , \emph{age}, \emph{height\_cm},
+\emph{weight\_kg}, \emph{overall}, \emph{potential}, \emph{shooting},
+\emph{contract\_valid\_until}, \emph{pace}, \emph{passing},
+\emph{dribbling}, and \emph{defending} to predict the response variable
+\emph{log\_value}.
+
+\hypertarget{linear-model-1}{%
+\subsection{linear Model}\label{linear-model-1}}
+
+\FloatBarrier
 \begin{table}[!h]
 
-\caption{\label{tab:unnamed-chunk-4}\label{tab:sum_lm} Summary of the linear model}
+\caption{\label{tab:structure and lm}\label{tab:sum_lm} Summary of the linear model}
 \centering
 \begin{tabular}[t]{lrrrr}
 \toprule
@@ -547,10 +562,33 @@ dribbling & -0.0016 & 0.0005 & -3.4678 & 0.0005\\
 \bottomrule
 \end{tabular}
 \end{table}
+\FloatBarrier
 
-\begin{table}
+In Table \ref{tab:sum_lm} one can see that only 1 parameter is not
+significant to a 5 per cent level. The variable \emph{overall} has,
+naturally, the biggest (positive) impact on the \emph{log\_value
+(value)}, whereas \emph{age} has the biggest negative effect.
 
-\caption{\label{tab:unnamed-chunk-5}\label{tab:sum_lasso} Summary of the LASSO }
+Table \ref{tab:sum_lm} also shows that some coefficients are relatively
+small but still significant. However, a general problem with \ac{OLS}
+estimation is that with increasing sample size, many
+\enquote{coefficients} become significant. This is because the standard
+errors become smaller with increasing N, the t-statistic becomes larger,
+and the p-value smaller. These coefficients (e.g.: \emph{pace}, or
+\emph{passing} ) could be zero in the \ac{LASSO} estimation because of
+the punishment term.
+
+\hypertarget{section-1}{%
+\subsection{\texorpdfstring{\acf{LASSO}}{}}\label{section-1}}
+
+For the frequentists \ac{LASSO} \(\lambda\)-parameter we used the
+\textbf{cv.glmnet} cross-validation function from the \textbf{glmnet}
+package and we got a \(\lambda\) of 0.01156
+\textcite{hastle_glmnet_2019}
+
+\begin{table}[!h]
+
+\caption{\label{tab:unnamed-chunk-4}\label{tab:sum_lasso} Summary of the LASSO }
 \centering
 \begin{tabular}[t]{ll}
 \toprule
@@ -573,9 +611,38 @@ dribbling & -\\
 \end{tabular}
 \end{table}
 
+\hypertarget{bayesian-lasso-1}{%
+\subsection{Bayesian Lasso}\label{bayesian-lasso-1}}
+
+\hypertarget{settings-of-the-hyperparameters}{%
+\subsubsection{Settings of the
+hyperparameters}\label{settings-of-the-hyperparameters}}
+
+In the \textbf{blasso} function of the \textbf{R} package
+\textbf{monomvn} it is possible to set the hyperparameters \(\lambda\),
+for the penalty term, and \(\alpha \, \text{and} \, \beta\), which are
+the shape and rate parameter for the prior. The \(\lambda\) is in our
+case an empirical parameter which will be approximate trhough an
+updating Gibbs sampler. The algorithm uses the parameter of the previous
+sample. So iteration \(k\) uses the Gibbs sampler with hyperparmeter
+\(k-1\). For the frequentists \ac{LASSO} the \(\lambda\)-parameter was
+0.01156, so we decided to set \(\lambda = 10\), since the first
+\(25 \%\) of the \ac{MCMC} are not used for the estimation and the
+sampler convergence rather quickly. \autocite{gramacy_monomvn_2019}
+
+\FloatBarrier
+
+\begin{align*} 
+  \lambda^{k} = \sqrt{\dfrac{2p}{\displaystyle \sum_{j = 1}^{p} E_{\lambda^{(k-1)}} [\tau_j^2| \pmb{y}] }}
+\end{align*} \FloatBarrier The expectations are replaced with averages
+from the previous Gibbs sampler. As \textcite{park_bayesian_2008} has
+shown any non extrem starting value for \(\lambda\) can be used. In the
+first setting we did not pass any parameters for
+\(\alpha \, \text{and} \, \beta\).
+
 \begin{table}
 
-\caption{\label{tab:unnamed-chunk-6}\label{tab:sum_bay} Summary of the Bayesian LASSO }
+\caption{\label{tab:unnamed-chunk-5}\label{tab:sum_bay} Summary of the Bayesian LASSO }
 \centering
 \begin{tabular}[t]{lrrr}
 \toprule
@@ -599,52 +666,86 @@ lambda.square & 0.000124 & 0.000037 & 0.000356\\
 \end{tabular}
 \end{table}
 
-\begin{table}
+As one can see in Tabel \ref{tab:sum_bay} the \emph{median} for all
+regressors are unequal to zero, whereas for the frequentist \ac{LASSO}
+we have 6 coefficient which are directly ecluded from the model,
+e.g.~zero. However, it is unlikely that for multidimensional bayesian
+model the median for a parameter is zero, since the computation depends
+on a Gibbs sampler. If we instead look at the 95 \% credible interval we
+finde that 6 of these intervall include the zero.
 
-\caption{\label{tab:unnamed-chunk-7}\label{tab:sum_bay_hy} Summary of the  Bayessian LASSO with hyperpriors}
+\FloatBarrier
+\begin{table}[!h]
+
+\caption{\label{tab:tabel_bayes_1}\label{tab:sum_bay_hy} Summary of the  Bayessian LASSO with hyperpriors}
 \centering
 \begin{tabular}[t]{lrrr}
 \toprule
   & median & 2.5\% & 97.5\%\\
 \midrule
-\rowcolor{gray!6}  beta1 & 0.067405 & 0.061796 & 0.072935\\
-beta2 & -0.100695 & -0.102174 & -0.099112\\
-\rowcolor{gray!6}  beta3 & 0.001274 & 0.000000 & 0.002045\\
-beta4 & 0.000000 & 0.000000 & 0.000446\\
-\rowcolor{gray!6}  beta5 & 0.209832 & 0.208392 & 0.211174\\
-beta6 & -0.005893 & -0.007389 & -0.004306\\
-\rowcolor{gray!6}  beta7 & 0.004792 & 0.004169 & 0.005301\\
-beta8 & 0.004703 & 0.000000 & 0.007556\\
-\rowcolor{gray!6}  beta9 & 0.000497 & 0.000000 & 0.001049\\
-beta10 & 0.001454 & 0.000000 & 0.002508\\
-\rowcolor{gray!6}  beta11 & -0.000977 & -0.002296 & 0.000000\\
-beta12 & -0.001553 & -0.001958 & -0.001094\\
+\rowcolor{gray!6}  log\_wage & 0.067405 & 0.061796 & 0.072935\\
+age & -0.100695 & -0.102174 & -0.099112\\
+\rowcolor{gray!6}  height\_cm & 0.001274 & 0.000000 & 0.002045\\
+weight\_kg & 0.000000 & 0.000000 & 0.000446\\
+\rowcolor{gray!6}  overall & 0.209832 & 0.208392 & 0.211174\\
+potential & -0.005893 & -0.007389 & -0.004306\\
+\rowcolor{gray!6}  shooting & 0.004792 & 0.004169 & 0.005301\\
+contract\_valid\_until & 0.004703 & 0.000000 & 0.007556\\
+\rowcolor{gray!6}  pace & 0.000497 & 0.000000 & 0.001049\\
+passing & 0.001454 & 0.000000 & 0.002508\\
+\rowcolor{gray!6}  dribbling & -0.000977 & -0.002296 & 0.000000\\
+defending & -0.001553 & -0.001958 & -0.001094\\
+\rowcolor{gray!6}  variance & 0.057671 & 0.056589 & 0.058846\\
+lambda.square & 0.000087 & 0.000028 & 0.000340\\
+\bottomrule
+\end{tabular}
+\end{table}
+\FloatBarrier
+
+\hypertarget{and-sensitive-analysis}{%
+\section{\texorpdfstring{\acf{RMSE} and \enquote{Sensitive
+Analysis}}{ and `Sensitive Analysis'}}\label{and-sensitive-analysis}}
+
+\begin{table}[!h]
+
+\caption{\label{tab:sensity }\label{tab:sum_bay_hy_1} Summary of the  Bayessian LASSO with hyperpriors}
+\centering
+\begin{tabular}[t]{lrrr}
+\toprule
+  & median & 2.5\% & 97.5\%\\
+\midrule
+\rowcolor{gray!6}  log\_wage & 0.067405 & 0.061796 & 0.072935\\
+age & -0.100695 & -0.102174 & -0.099112\\
+\rowcolor{gray!6}  height\_cm & 0.001274 & 0.000000 & 0.002045\\
+weight\_kg & 0.000000 & 0.000000 & 0.000446\\
+\rowcolor{gray!6}  overall & 0.209832 & 0.208392 & 0.211174\\
+potential & -0.005893 & -0.007389 & -0.004306\\
+\rowcolor{gray!6}  shooting & 0.004792 & 0.004169 & 0.005301\\
+contract\_valid\_until & 0.004703 & 0.000000 & 0.007556\\
+\rowcolor{gray!6}  pace & 0.000497 & 0.000000 & 0.001049\\
+passing & 0.001454 & 0.000000 & 0.002508\\
+\rowcolor{gray!6}  dribbling & -0.000977 & -0.002296 & 0.000000\\
+defending & -0.001553 & -0.001958 & -0.001094\\
 \rowcolor{gray!6}  variance & 0.057671 & 0.056589 & 0.058846\\
 lambda.square & 0.000087 & 0.000028 & 0.000340\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\hypertarget{parameter-results-and-posteriod-based-prediction}{%
-\section{Parameter Results and (Posteriod-based)
-prediction}\label{parameter-results-and-posteriod-based-prediction}}
-
-\hypertarget{residuals-and-sensitive-analysis}{%
-\section{Residuals and Sensitive
-Analysis}\label{residuals-and-sensitive-analysis}}
-
 \hypertarget{discussion-and-further-research}{%
 \section{Discussion and further
 research}\label{discussion-and-further-research}}
 
+LaSt Part \newpage
 \newpage
-
 \renewcommand*{\mkbibnamefamily}[1]{\textbf{#1}}
 \renewcommand*{\mkbibnamegiven}[1]{\textbf{#1}}
 \renewcommand*{\mkbibnameprefix}[1]{\textbf{#1}}
 \renewcommand*{\mkbibnamesuffix}[1]{\textbf{#1}}
-\printbibliography[title=References]
 
+
+\printbibliography[title=References]
+\pagenumbering{arabic}
 
 
 \newpage

@@ -51,7 +51,7 @@ source("packages/packages.R")
 
 # Introduction
 
-In recent years, the \ac{LASSO} method of @tibshirani_regression_1996 has emerged as an alternative to ordinary least squares estimation. The success of the method is mainly due to its ability to perform both variable selection and estimation. As already Tibshirani pointed out in his original paper the standard \ac{LASSO} model can be interpreted as a linear regression with a Laplace prior. PARK and CASELLA  where the first to implement the Bayesian l\ac{LASSO} >>using a conditional Laplace prior specification<<.
+In recent years, the \ac{LASSO} method of @tibshirani_regression_1996 has emerged as an alternative to ordinary least squares estimation. The success of the method is mainly due to its ability to perform both variable selection and estimation. As already Tibshirani pointed out in his original paper the standard \ac{LASSO} model can be interpreted as a linear regression with a Laplace prior. @park_bayesian_2008 where the first to implement the Bayesian l\ac{LASSO} >>using a conditional Laplace prior specification<<.
 
 Our goal is to compare the result of the Bayesian \ac{LASSO} with normal \ac{LASSO} method and an ordinary least square estimation. The focus is particularly on the number of non-significant parameters in the linear model or, in case of the \acp{LASSO} the parameters equal to zero.  
 
@@ -73,7 +73,7 @@ For Bayesian statistics the event theorem gets \eqref{eq:bayes_theorem} rewritte
   \pi (\theta | y) = \dfrac{f(y | \theta) \pi(\theta)}{f(y)}
 \end{align}
 
-From \eqref{eq:bayes_dens} the advantages and disadvantages of Bayesian statistics compared to frequentist statistics can directly be retrieved. One major adavantage is that the Bayesian approach can account for prior knowledge and points out a philosophical difference to the frequentist approach - that the obtained data stands not alone. Another, key difference and advantage is that in the Bayesian world the computation are made with distributions and this leads to a better information level than just the computation of the first and second moment. The computation of distributions are also the greatest disadvantages or more neutral the biggest problem of the Bayesian approach because in high dimensional problems the computation takes a lot of times or is sometimes even not possible. A solution to that is that with newer and better computers it is possible to simulate the integrals with a \ac{MCMC} method.  [@ghosh_introduction_2006, p. 100] PAGE NUMBER!! 
+From \eqref{eq:bayes_dens} the advantages and disadvantages of Bayesian statistics compared to frequentist statistics can directly be retrieved. One major advantage is that the Bayesian approach can account for prior knowledge and points out a philosophical difference to the frequentist approach - that the obtained data stands not alone. Another, key difference and advantage is that in the Bayesian world the computations are made with distributions and this leads to a better information level than just the computation of the first and second moment. The computation of distributions is also the greatest disadvantages or more neutral the biggest problem of the Bayesian approach because in high dimensional problems the computation takes a lot of times or is sometimes even not possible. A solution to that is that with newer and better computers it is possible to simulate the integrals with a \ac{MCMC} method.  [@ghosh_introduction_2006, p. 100] PAGE NUMBER!! 
 \newpage
 
 # Data description 
@@ -176,16 +176,15 @@ test_x <- test %>%
 
 ```
 
+We collected the data from the online database platform _kaggel._ The dataset includes 6 years of data for all players who  were included in the soccer simulation game _FIFA_ from _EA Sports_. We decided to  keep the data for 2019 and 2020, only. The Data for 2019 contains `r length(fifa_data$value_eur[fifa_data$year == 2019])` datapoints which will be used for the estimation of the different models whereas the 2020 data with `r length(fifa_data$value_eur[fifa_data$year == 2020])` will be used to compare the quality of the models with an out of sample \ac{RMSE}. Both datasets consist of `r unique(dim(data_19)[[2]], dim(data_20)[[2]]) ` variables which will not all be included in the estimations. Some Variables are just an ID or different length of names and URLs. [@leone_fifa_2020]
 
-We collected the data from the online database platform _kaggel._   The dataset included  6 years of data for all players which were included in the soccer simulation game _FIFA_  from _EA Sports_. We decided to just keep the data for 2019 and 2020.  The Data for 2019 contains  `r length(fifa_data$value_eur[fifa_data$year == 2019])` datapoints  will be used  for the estimation of the different models whereas the 2020 data with `r length(fifa_data$value_eur[fifa_data$year == 2020])` will be used to compare the quality of the models with an out of sample \ac{RMSE}. Both datasets consist of `r unique(dim(data_19)[[2]], dim(data_20)[[2]]) ` variables which will not all be included in the estimations. Some Variables are just an ID or different length of names and URLs. [@leone_fifa_2020]
-
-A fundamental problem of the dataset was that goalkeepers are systematically rated differently than field players. Therefore, in the subcategories of _overall_ all field player categories were assigned NAs for goalkeepers. Conversely, all field players have NAs in all goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot handle NAs, they are set to zero for all models. 
-
-It is not very realistic that a fielder has no values in the goalkeeper categories and vice versa. However, it can be argued, at least for outfield players, that goalkeeper attributes play no role in determining market values. This argumentation does not seem to hold for goalkeepers, at least passing can be assumed to be an influential variable for the market value, because is an essential asset for the passing game if the ball is in the goalkeeper's hands. Nevertheless, due to the lack of alternatives, all NAs have been replaced by zero.  
+A fundamental problem of the dataset consists as  goalkeepers are systematically rated differently than field players. Therefore, in the subcategories of the variable _overall_ all field player categories were assigned NAs for goalkeepers. Conversely, all field players have NAs in all goalkeeper categories. Because the algorithm of \ac{LASSO} in R cannot handle NAs they have been  set to zero for all models.
 
 
+It is not very realistic that a fielder has no values in the goalkeeper categories and vice versa. However, it can be argued, at least for outfield players, that goalkeeper attributes play no role in determining market values. This argumentation does not seem to hold for goalkeepers, at least passing can be assumed to be an influential variable for the market value, because is an essential asset for the passing game if the goalkeeper has possession of the ball. Nevertheless, due to the lack of alternatives, all NAs have been replaced by Zero.
 
-```{r , echo = FALSE}
+
+```{r data, echo = FALSE}
 
 sum_var <- papeR::summarise( as.data.frame(fifa_data%>%dplyr::select(value_eur, wage_eur, overall, year, age, potential )), 
                    group = 'year', p_value = FALSE, quantil = FALSE )
@@ -198,7 +197,7 @@ knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary of some im
 
 ```
 
-As one can see in Table \ref{tab:sum} the differences between the editions for the most important variables are considerable small. For example,  from 2019 to 2020 the mean player _value_ (response variable) increased by `r scales::scientific(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), digits = 3)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Similar results are observable for the probably most important righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
+As one can see in Table \ref{tab:sum} the differences between the editions for the most important variables are considerably small. For example,  from 2019 to 2020 the mean player _value_ (response variable) increased by `r scales::scientific(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), digits = 3)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Similar results are observable for the probably most important righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
 
 ```{r , fig1, echo = FALSE, fig.cap = " \\label{fig:hist_1} Histograms of player values and log player values"}
 
@@ -284,7 +283,7 @@ The Gibbs Sampler is a special case of an \ac{MCMC} algorithm, which is useful t
 The algortithm tries to find the approximate joint distribution and therefore the algortihm runs through the subvectors $\beta$ and draws ach subset conditional on all other values. [@gelman_bayesian_2004]
 
 
-Bayesian \ac{LASSO} the Gibbs sampler in the __monomvn__ package in __R__ [gramacy_monomvn_2019] samples from the following representation of the Laplace distribution 
+Bayesian \ac{LASSO} the Gibbs sampler in the __monomvn__ package in __R__ [@gramacy_monomvn_2019] samples from the following representation of the Laplace distribution 
 
 \begin{align} 
 \label{eq:gibbs}
@@ -307,11 +306,15 @@ The full model has the following hierarchical representation
 If $\tau^2_1 , \ldots , \tau^2_p$ gets integreted out of the conditional prior on $\pmb{\beta}$ , we get the form of \eqref{eq:la_bay_prior}. For $\sigma^2$ the inverse-gamma function of the form $\pi \left( \sigma^2 \right) = \dfrac{1}{\sigma^2}$ was implemented in the __monomvn__ package.    
 
 
+
 # Estimation of the Models  
 
 
+To compare the performances of the models all three models got, obviously, estimated with the same regressors.  We included as righthand variables: _log_wage_ , _age_, _height_cm_, _weight_kg_, _overall_, _potential_, _shooting_, _contract_valid_until_, _pace_, _passing_, _dribbling_,  and _defending_ to predict the response variable _log_value_. 
 
-```{r , echo = FALSE}
+## linear Model
+\FloatBarrier
+```{r structure and lm, echo = FALSE}
 
 # the estimation of the models are in a seperate file, so that the compilation does not take to long, the models were stored in an additional file
 
@@ -327,6 +330,14 @@ knitr::kable(summary(fit_lm)$coef, digits = 4, caption = '\\label{tab:sum_lm} Su
 
 #sum(summary(fit_lm)$coef[,4] > 0.05)
 ```
+\FloatBarrier
+
+In Table \ref{tab:sum_lm} one can see that only `r sum(summary(fit_lm)$coef[,4] > 0.05)` parameter is not significant to a 5 per cent level. The variable _overall_ has, naturally, the biggest (positive) impact on the _log_value (value)_, whereas _age_ has the biggest negative effect. 
+
+Table \ref{tab:sum_lm} also shows that some coefficients are relatively small but still significant. However, a general problem with \ac{OLS} estimation is that with increasing sample size, many "coefficients" become significant. This is because the standard errors become smaller with increasing N, the t-statistic becomes larger, and the p-value smaller. These coefficients (e.g.: _pace_, or _passing_ ) could be zero in the \ac{LASSO} estimation because of the punishment term.   
+
+## \acf{LASSO}
+
 
 ```{r , echo = FALSE}
  #### freq LASSO ####
@@ -339,17 +350,36 @@ knitr::kable(summary(fit_lm)$coef, digits = 4, caption = '\\label{tab:sum_lm} Su
 
  glmnet_coef_k <- round(glmnet_coef,6)
  glmnet_coef_k[glmnet_coef_k == 0] <- '-'
+```
 
+For the frequentists \ac{LASSO} $\lambda$-parameter we used the __cv.glmnet__ cross-validation function from the __glmnet__ package  and we got a $\lambda$ of `r round(LA,5)` @hastle_glmnet_2019
+
+
+```{r , echo = FALSE}
 
  knitr::kable(glmnet_coef_k, digits = 6, caption = '\\label{tab:sum_lasso} Summary of the LASSO ', format.args = list(decimal.mark = '.', big.mark = " "),  col.names = c('Estimate'),  booktabs = TRUE, linesep = "")%>%
-   kable_styling(latex_options = c("striped"))#, "hold_position"))
+   kable_styling(latex_options = c("striped", "hold_position"))
 
 # sum(glmnet_coef == 0)
 ```
 
+## Bayesian Lasso 
+
+### Settings of the hyperparameters 
+
+In the __blasso__ function of the __R__ package __monomvn__ it is possible to set the hyperparameters $\lambda$, for the penalty term, and  $\alpha \,  \text{and} \, \beta$, which are the shape and rate parameter for the prior. The $\lambda$ is in our case an empirical parameter which will be approximate trhough an updating Gibbs sampler. The algorithm uses the parameter of the previous sample. So iteration $k$ uses the Gibbs sampler with hyperparmeter $k-1$.
+For the frequentists \ac{LASSO} the $\lambda$-parameter was `r round(LA, 5)`, so we decided to set  $\lambda = 10$,  since the first $25  \%$ of the \ac{MCMC} are not used for the estimation and the sampler convergence rather quickly.  [@gramacy_monomvn_2019] 
+
+\FloatBarrier
+\begin{align*} 
+  \lambda^{k} = \sqrt{\dfrac{2p}{\displaystyle \sum_{j = 1}^{p} E_{\lambda^{(k-1)}} [\tau_j^2| \pmb{y}] }}
+\end{align*}
+\FloatBarrier
+The expectations are replaced with averages from the previous Gibbs sampler. As @park_bayesian_2008 has shown any non extrem starting value for $\lambda$ can be used. In the first setting we did not pass any parameters for $\alpha \, \text{and} \, \beta$. 
 
 ```{r , echo = FALSE}
- ###### bayes LASSO ####
+ 
+ ### bayes LASSO ###
 
 #source("01_code/bayes.R")
 load(file = here::here('04_output/bayes_lasso_fit.RData'))
@@ -363,7 +393,7 @@ coef_lasso <- as.data.frame(cbind(beta1 = bayes_lasso_fit$beta[, "b.1"],
                                    beta7 = bayes_lasso_fit$beta[, "b.7"],
                                    beta8 = bayes_lasso_fit$beta[, "b.8"],
                                    beta9 = bayes_lasso_fit$beta[, "b.9"],
-                                   beta10 = bayes_lasso_fit$beta[, "b.10"],                                                      beta11 = bayes_lasso_fit$beta[, "b.11"],
+                                   beta10 = bayes_lasso_fit$beta[, "b.10"],                                                               beta11 = bayes_lasso_fit$beta[, "b.11"],
                                    beta12 = bayes_lasso_fit$beta[, "b.12"],
                                    variance = bayes_lasso_fit$s2,
                                    lambda.square = bayes_lasso_fit$lambda2))
@@ -396,18 +426,25 @@ coef_lasso <- as.data.frame(cbind(beta1 = bayes_lasso_fit$beta[, "b.1"],
 
 ```
 
+As one can see in Tabel \ref{tab:sum_bay} the _median_ for all regressors are unequal to zero, whereas for the frequentist \ac{LASSO} we have `r sum(glmnet_coef == 0)` coefficient which are directly ecluded from the model, e.g. zero. However, it is unlikely that for multidimensional bayesian model the median for a parameter is zero, since the computation depends on a Gibbs sampler. If we instead look at the 95 \%  credible interval we finde that `r sum(BA[,2] * BA[,3] <= 0)` of these intervall include the zero.  
 
-```{r , echo = FALSE}
+\FloatBarrier
+```{r tabel_bayes_1, echo = FALSE}
  HY <- cbind(colMedians(coef_lasso_hyper),
  matrixStats::colQuantiles(as.matrix(coef_lasso_hyper), probs = c(0.025, 0.975)))
  colnames(HY)[1] <- 'median'
+ rownames(HY)[1:12] <- rownames(glmnet_coef_k)[2:13]
  
  knitr::kable(HY, digits = 6, caption = '\\label{tab:sum_bay_hy} Summary of the  Bayessian LASSO with hyperpriors', format.args = list(decimal.mark = '.', big.mark = " "),  booktabs = TRUE, linesep = "")%>%
-   kable_styling(latex_options = c("striped")) #, "hold_position"))
+   kable_styling(latex_options = c("striped", "hold_position"))
 
 # sum(HY[,2] * HY[,3] <= 0)
 ```
+\FloatBarrier
 
+<!-- # Parameter Results  and (Posteriod-based) prediction  -->
+
+# \acf{RMSE} and 'Sensitive Analysis' 
 
 ```{r, echo = FALSE}
 rmse_lm <-modelr::rmse(fit_lm, test)
@@ -479,14 +516,23 @@ rmse_bay_las_hyp <- own_rmse(y_hat_bay_las_hy , test$log_value)
 
 ```
 
-# Parameter Results  and (Posteriod-based) prediction 
 
-# Residuals and Sensitive Analysis 
+
+
+```{r sensity , echo = FALSE }
+ HY <- cbind(colMedians(coef_lasso_hyper),
+ matrixStats::colQuantiles(as.matrix(coef_lasso_hyper), probs = c(0.025, 0.975)))
+ colnames(HY)[1] <- 'median'
+ rownames(HY)[1:12] <- rownames(glmnet_coef_k)[2:13]
+ 
+ knitr::kable(HY, digits = 6, caption = '\\label{tab:sum_bay_hy_1} Summary of the  Bayessian LASSO with hyperpriors', format.args = list(decimal.mark = '.', big.mark = " "),  booktabs = TRUE, linesep = "")%>%
+   kable_styling(latex_options = c("striped", "hold_position"))
+
+# sum(HY[,2] * HY[,3] <= 0)
+```
+
 
 # Discussion and further research 
 
-
-
-
-
+LaSt Part
 \newpage

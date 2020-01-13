@@ -5,6 +5,7 @@ $else$
 \usepackage{lmodern}
 $endif$
 
+\usepackage{placeins}
 \usepackage{amssymb,amsmath}
 \usepackage{ifxetex,ifluatex}
 \usepackage{fixltx2e} % provides \textsubscript
@@ -363,6 +364,7 @@ $endif$
 \begin{acronym}[dummyyyy]
  \acro{bagging}{Bootstrap Aggregation}
  \acro{LASSO}{Least Absolute Shrinkage and Selection Operator}
+ \acro{OLS}{(ordinary least squares}
  \acro{pcr}{Principal Components Regression}
  \acro{pls}{Partial Least Squares}
  \acro{RMSE}{Root Mean Squared Error}
@@ -381,7 +383,8 @@ $endif$
 \restoregeometry
 
 \newpage
-\pagenumbering{arabic}
+\pagenumbering{arabic} %Roman arabic
+
 $body$
 $if(natbib)$
 
@@ -398,13 +401,15 @@ $endif$
 $endif$
 $endif$
 $if(biblatex)$
-
+\newpage
 \renewcommand*{\mkbibnamefamily}[1]{\textbf{#1}}
 \renewcommand*{\mkbibnamegiven}[1]{\textbf{#1}}
 \renewcommand*{\mkbibnameprefix}[1]{\textbf{#1}}
 \renewcommand*{\mkbibnamesuffix}[1]{\textbf{#1}}
-\printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
 
+
+\printbibliography$if(biblio-title)$[title=$biblio-title$]$endif$
+\pagenumbering{arabic}
 $endif$
 
 $for(include-after)$

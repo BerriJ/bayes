@@ -325,3 +325,13 @@ y_hat_bay_las_hy <- rep(median(bayes_lasso_fit_hyper$mu), length(test$log_wage))
 
 own_rmse(y_hat_bay_las_hy , test$log_value)
 
+
+
+names(summary(fit_lm))
+
+row.names(summary(fit_lm)$coefficients)[2:13]
+
+
+
+
+
