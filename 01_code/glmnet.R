@@ -91,10 +91,12 @@ train_x <- train %>%
 
 ##models 
 
+LA_all <- cv.glmnet(as.matrix(train_x), as.matrix(train_y), nfolds = 100)
 LA <- cv.glmnet(as.matrix(train_x), as.matrix(train_y), nfolds = 100)$lambda.1se
+
 
 glmnet_fit <-  glmnet(as.matrix(train_x), as.matrix(train_y), 
                       lambda = LA, alpha=1)
 
-save(LA, glmnet_fit, file = here::here('04_output/glmnet_lm.RData'))
+save(LA, LA_all, glmnet_fit, file = here::here('04_output/glmnet_lm.RData'))
 

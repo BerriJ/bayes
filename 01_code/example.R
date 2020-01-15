@@ -143,18 +143,6 @@ library(cowplot)
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 aa <- mean(fifa_data$value_eur[fifa_data$year ==2020])
  
 
@@ -167,9 +155,134 @@ formatC(aa, format = "fg", digits = 2)
 formatC(aa, format = "s", digits = 2)
 
 
+set.seed(1010)
+n = 1000
+p = 100
+nzc = trunc(p/10)
+x = matrix(rnorm(n * p), n, p)
+beta = rnorm(nzc)
+fx = x[, seq(nzc)] %*% beta
+eps = rnorm(n) * 5
+y = drop(fx + eps)
+px = exp(fx)
+px = px/(1 + px)
+ly = rbinom(n = length(px), prob = px, size = 1)
+set.seed(1011)
+cvob1 = cv.glmnet(x, y)
+plot(cvob1)
 
 
+dim(x)
+length(y)
+
+
+plot(LA_all)
+
+
+###plots residuals vs fitted
+
+
+
+a <- modelr::rmse(fit_lm, train)
+rmse_lm <-modelr::rmse(fit_lm, test)
+
+#linear model
+lm_plot_data <- as.data.frame(cbind(fit_lm$residuals, fit_lm$fitted.values))
+ colnames(lm_plot_data) <- c('residuals' ,'fitted_values')
+
+ ggplot(data = lm_plot_data, aes(fitted_values, residuals))+
+   geom_point(colour = "blue", fill = "blue", alpha = 0.1) +
+   labs(title = "Scatterplot Residuals vs fitted Values", x = "Fitted Values", y = "Residuals ")+
+   theme_minimal()+
+   theme(aspect.ratio = 9/16, plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))+ 
+   geom_hline(yintercept = 0, linetype = 'dashed', size = 0.8)
+ 
+#lasso
+ 
+ 
+ lasso_plot_data <- as.data.frame(cbind( ( test_y  - y_hat_freq_las  ), y_hat_freq_las ))
+ colnames(lasso_plot_data) <- c('residuals' ,'fitted_values')
+ 
+ ggplot(data = lasso_plot_data, aes(fitted_values, residuals))+
+   geom_point(colour = "blue", fill = "blue", alpha = 0.1)+
+   labs(title = "Scatterplot Residuals vs fitted Values", x = "Fitted Values", y = "Residuals ")+
+   theme_minimal()+
+   theme(aspect.ratio = 9/16, plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))+ 
+   geom_hline(yintercept = 0, linetype = 'dashed', size = 0.8)
+ 
+##bayes 
+ 
+ bayes_plot_data <- as.data.frame(cbind((test_y - y_hat_bay_las), y_hat_bay_las ))
+ colnames(bayes_plot_data) <- c('residuals' ,'fitted_values')
+ 
+ ggplot(data = bayes_plot_data, aes(fitted_values, residuals))+
+   geom_point(colour = "blue", fill = "blue", alpha = 0.1)+
+   labs(title = "Scatterplot Residuals vs fitted Values", x = "Fitted Values", y = "Residuals ")+
+   theme_minimal()+
+   theme(aspect.ratio = 9/16, plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))+ 
+   geom_hline(yintercept = 0, linetype = 'dashed', size = 0.8)
 
 
  
+ ggplot(data = bayes_plot_data, aes(residuals))+
+   geom_density(colour = "blue", fill = "blue", alpha = 0.3)+
+   labs(title = "Density distribution of the residuals", x = "Residuals", y = "Density")+
+   theme_minimal()+
+   theme(aspect.ratio = 9/16, plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))+ 
+   geom_hline(yintercept = 0, linetype = 'dashed', size = 0.8)
+ 
+   mean(bayes_plot_data$residuals)
   
+   t.test(bayes_plot_data$residuals)
+  
+   
+
+AA <-   t.test(bayes_plot_data$residuals)$sta
+   
+
+AA$statistic
+AA$p.value
+##hyper 
+
+ 
+ 
+ bayes_hy_plot_data <- as.data.frame(cbind((test_y - y_hat_bay_las_hy), y_hat_bay_las_hy ))
+ colnames(bayes_hy_plot_data) <- c('residuals' ,'fitted_values')
+ 
+ ggplot(data = bayes_hy_plot_data, aes(fitted_values, residuals))+
+   geom_point(colour = "blue", fill = "blue", alpha = 0.1)+
+   labs(title = "Scatterplot Residuals vs fitted Values", x = "Fitted Values", y = "Residuals ")+
+   theme_minimal()+
+   theme(aspect.ratio = 9/16, plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))+ 
+   geom_hline(yintercept = 0, linetype = 'dashed', size = 0.8)
+
+ 
+ ggplot(data = bayes_hy_plot_data, aes(fitted_values, residuals))+
+   geom_line(colour = "blue",  alpha = 0.5, size = 0.02)+
+   labs(title = "Scatterplot Residuals vs fitted Values", x = "Fitted Values", y = "Residuals ")+
+   theme_minimal()+
+   theme(aspect.ratio = 9/16, plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))+ 
+   geom_hline(yintercept = 0, linetype = 'dashed', size = 0.8)
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+# r^2
+ 
+ fit_lm 
+
+ names( summary(fit_lm))
+summary(fit_lm)$r.squared 
+
+r_squared <- (sum ((fit_lm$fitted.values - mean(as.matrix(train_y)))^2) ) / (sum (  (train_y - mean(as.matrix(train_y)))^2))
+
+ 
+ 
+ 
+ 

@@ -100,7 +100,7 @@
   \title{Bayes Seminar}
   \pretitle{\vspace{\droptitle}\centering\huge}
   \posttitle{\par}
-\subtitle{Advanced R for Econometricians}
+\subtitle{Seminar in Econometrics}
   \author{Jens Klenke}
   \preauthor{\centering\large\emph}
   \postauthor{\par}
@@ -170,7 +170,7 @@
   \begin{center}
   \huge{Bayes Seminar}\\
   \vspace{.25cm}
-  \Large{Advanced R for Econometricians}\\
+  \Large{Seminar in Econometrics}\\
   \vspace{0.5cm}
   \large{Seminar Paper}\\
   \vspace{1cm}
@@ -298,6 +298,8 @@ Our goal is to compare the result of the Bayesian \ac{LASSO} with normal
 particularly on the number of non-significant parameters in the linear
 model or, in case of the \acp{LASSO} the parameters equal to zero.
 
+Relevanz and structure
+
 \newpage
 
 \hypertarget{theory-of-bayesian-inference}{%
@@ -418,10 +420,17 @@ logarithmized.
 \hypertarget{used-models}{%
 \section{Used Models}\label{used-models}}
 
-To compare the Bayesian \ac{LASSO} we will analyse the data also with a
-linear multivariate model, and the frequentist \ac{LASSO}. We wil start
-with the linear model and will modifie the model equations step by step
-forwards the bayesian version.
+To compare the Bayesian \ac{LASSO} we will also analyse the data with a
+linear multivariate model, and the frequentist \ac{LASSO}. We will start
+with the linear model and then gradually modify the model equations
+respectively the condition for estimating the parameters. So that the
+coherences between the individual methods become clear.
+
+All three methods have the common assumption that the relationship is
+linear, at least in the parameters. The assumption seems stricter than
+it is at first, because the data can be manipulated in such a way that
+the relationship is linear after all. In our data, this was done by
+logarithmization.
 
 \hypertarget{linear-model}{%
 \subsection{Linear Model}\label{linear-model}}
@@ -437,11 +446,12 @@ equation.
 Where \(\pmb{y}\) is the \(n \times 1\) response vector, \(\pmb{X}\) is
 the \(n \times p\) matrix of regressors and, \(\pmb{\epsilon}\) is the
 \(n \times 1\) vecotr of \ac{i.i.d.} errors with mean 0 and unknown
-variance \(\sigma^2\). The coefficient will be estimated by the ordinary
-least square method, which means that \(\pmb{\beta}\) should be chosen
-so that the \emph{Euclidean norm}
-\(\left( || \mathbf{y - X\beta} ||_2 \right)\) is minimal. This yields
-in the conditon for the estimation of coefficients:
+variance \(\sigma^2\).
+
+The coefficient will be estimated by the ordinary least square method,
+which means that \(\pmb{\beta}\) should be chosen so that the
+\emph{Euclidean norm} \(\left( || \mathbf{y - X\beta} ||_2 \right)\) is
+minimal. This yields in the conditon for the estimation of coefficients:
 
 \begin{align}
 \label{eq:lm_con}
@@ -454,7 +464,7 @@ in the conditon for the estimation of coefficients:
 In the \ac{LASSO} method the model equation is the same as the equation
 for the multivariate but the condition for the optimization of the
 estimators in equation \eqref{eq:lm_con} has an additional punishment
-term. Which leads to the optimazation of:
+term. Which leads to the following optimazation.
 
 \begin{align}
 \label{eq:la_con}
@@ -465,8 +475,8 @@ for some \(\lambda \geq 0\). This method is also often referred to as
 \(L_1\) -penalized least squares estimation.
 
 Already in his original paper \textcite{tibshirani_regression_1996} has
-pointed out the possibility that his methods can also be interpreted
-Bayesian. The LASSO estimates can be considered as posterior mode
+pointed out the possibility that his methods can also be interpreted in
+a Bayesian way. The LASSO estimates can be considered as posterior mode
 estimates with a double-exponential Laplace prior.
 
 \hypertarget{bayesian-lasso}{%
@@ -482,9 +492,8 @@ a conditional Laplace prior of the form
 
 \autocite{park_bayesian_2008}
 
-\hypertarget{gibbs-sampler-and-the-full-model-specification}{%
-\subsubsection{Gibbs Sampler and the full Model
-specification}\label{gibbs-sampler-and-the-full-model-specification}}
+\hypertarget{gibbs-sampler-and}{%
+\subsubsection{Gibbs Sampler and}\label{gibbs-sampler-and}}
 
 The Gibbs Sampler is a special case of an \ac{MCMC} algorithm, which is
 useful to approximate the combianed distribution of two or more
@@ -497,25 +506,27 @@ ach subset conditional on all other values.
 
 Bayesian \ac{LASSO} the Gibbs sampler in the \textbf{monomvn} package in
 \textbf{R} \autocite{gramacy_monomvn_2019} samples from the following
-representation of the Laplace distribution
+representation of the Laplace distribution.
+\textcite{andrews_scale_1974}
 
 \begin{align} 
 \label{eq:gibbs}
   \dfrac{a}{2}e^{-a |z|} = \int_{0}^{\infty} \dfrac{1}{2 \sqrt{\sigma^2}} e^{ -z^2 / (2s)} \; \dfrac{a^2}{2} e^{ -a^2 s /2} ds, \qquad a > 0 
 \end{align}
 
-\textcite{andrews_scale_1974}
+\hypertarget{the-full-model-specification}{%
+\subsubsection{The full Model
+specification}\label{the-full-model-specification}}
 
 The full model has the following hierarchical representation
 
-\begin{align} 
-\label{eq:hier}
+\begin{align*}
   \pmb{y|\mu}, \pmb{X}, \pmb{\beta}, \sigma^2 & \sim N_n (\mu \pmb{1}_n + \pmb{X \beta}, \sigma^2  \pmb{I}_n)   \nonumber\\
-  \pmb{\beta} | \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim N_p (\pmb{0}_p , \sigma^2 \pmb{D}_{\tau}) \nonumber \\
-  \pmb{D}_{\tau} & = diag(\tau^2_1 , \ldots , \tau^2_p)\\
+  \pmb{\beta} | \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim N_p (\pmb{A}^{-1} \pmb{X}^T \tilde{\pmb{y}}  , \sigma^2 \pmb{A}^{-1}) \qquad \pmb{A} = \pmb{X}^T \pmb{X} + \pmb{D}^{-1}_{\tau} \nonumber \\
+  \pmb{D}_{\tau} & = diag(\tau^2_1 , \ldots , \tau^2_p) \nonumber \\ 
   \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim \pi \left( \sigma^2 \right) d \sigma^2 \prod_{j = 1}^{p} \dfrac{\lambda^2}{2}e^{- \lambda^2 \tau^2_j /2} d \tau^2_j \nonumber \\
   \sigma^2, \tau^2_1 , \ldots , \tau^2_p & > 0 \nonumber \\
-\end{align}
+\end{align*}
 
 If \(\tau^2_1 , \ldots , \tau^2_p\) gets integreted out of the
 conditional prior on \(\pmb{\beta}\) , we get the form of
@@ -523,19 +534,22 @@ conditional prior on \(\pmb{\beta}\) , we get the form of
 the form \(\pi \left( \sigma^2 \right) = \dfrac{1}{\sigma^2}\) was
 implemented in the \textbf{monomvn} package.
 
-\hypertarget{estimation-of-the-models}{%
-\section{Estimation of the Models}\label{estimation-of-the-models}}
+\newpage
+
+\hypertarget{estimation-and-results-of-the-models}{%
+\section{Estimation and Results of the
+Models}\label{estimation-and-results-of-the-models}}
 
 To compare the performances of the models all three models got,
 obviously, estimated with the same regressors. We included as righthand
 variables: \emph{log\_wage} , \emph{age}, \emph{height\_cm},
 \emph{weight\_kg}, \emph{overall}, \emph{potential}, \emph{shooting},
 \emph{contract\_valid\_until}, \emph{pace}, \emph{passing},
-\emph{dribbling}, and \emph{defending} to predict the response variable
-\emph{log\_value}.
+\emph{dribbling}, and \emph{defending}, so we have 12 to predict the
+response variable \emph{log\_value}.
 
 \hypertarget{linear-model-1}{%
-\subsection{linear Model}\label{linear-model-1}}
+\subsection{Linear Model}\label{linear-model-1}}
 
 \FloatBarrier
 \begin{table}[!h]
@@ -581,10 +595,12 @@ the punishment term.
 \hypertarget{section-1}{%
 \subsection{\texorpdfstring{\acf{LASSO}}{}}\label{section-1}}
 
-For the frequentists \ac{LASSO} \(\lambda\)-parameter we used the
-\textbf{cv.glmnet} cross-validation function from the \textbf{glmnet}
-package and we got a \(\lambda\) of 0.01156
-\textcite{hastle_glmnet_2019}
+For the frequentists \ac{LASSO} we used the \textbf{cv.glmnet}
+cross-validation function from the \textbf{glmnet} package with 100
+folds to gain \(\lambda\). A \(\lambda\) of 0.00261 minimized the mean
+cross-validated error. However, we used a lambda of 0.01156 which is the
+largest \(\lambda\) such that error is still within one standard error
+of the minimum. \textcite{hastle_glmnet_2019}
 
 \begin{table}[!h]
 
@@ -610,6 +626,19 @@ dribbling & -\\
 \bottomrule
 \end{tabular}
 \end{table}
+
+As one can see in Table \ref{tab:sum_lasso} there are significant
+differences to the linear system of equations. Lasso has shrunk 6
+parameters so much that they are no longer included in the model
+equation. It may be particularly noticeable, because it seems contra
+intuitive and it had the biggest impact in the linear model from the 6
+excluded parameters, that the variable \emph{contract\_valif\_until} is
+also not represented in the model.
+
+Since LASSO does not only estimate regressors, but also selects them, no
+significance tests are needed
+
+\newpage
 
 \hypertarget{bayesian-lasso-1}{%
 \subsection{Bayesian Lasso}\label{bayesian-lasso-1}}
@@ -640,6 +669,8 @@ shown any non extrem starting value for \(\lambda\) can be used. In the
 first setting we did not pass any parameters for
 \(\alpha \, \text{and} \, \beta\).
 
+\FloatBarrier
+
 \begin{table}
 
 \caption{\label{tab:unnamed-chunk-5}\label{tab:sum_bay} Summary of the Bayesian LASSO }
@@ -666,46 +697,104 @@ lambda.square & 0.000124 & 0.000037 & 0.000356\\
 \end{tabular}
 \end{table}
 
+\FloatBarrier
+
 As one can see in Tabel \ref{tab:sum_bay} the \emph{median} for all
 regressors are unequal to zero, whereas for the frequentist \ac{LASSO}
 we have 6 coefficient which are directly ecluded from the model,
-e.g.~zero. However, it is unlikely that for multidimensional bayesian
-model the median for a parameter is zero, since the computation depends
-on a Gibbs sampler. If we instead look at the 95 \% credible interval we
-finde that 6 of these intervall include the zero.
+e.g.~zero.
+
+However, it is unlikely that for multidimensional bayesian model the
+median for a parameter is zero, since the computation depends on a Gibbs
+sampler. If we instead look at the 95 \% credible interval we finde that
+6 of these intervall include the zero.
+
+\newpage
+
+\hypertarget{residual-analysis-and-sensitive-analysis}{%
+\section{\texorpdfstring{Residual Analysis, \acf{RMSE} and
+\enquote{Sensitive
+Analysis}}{Residual Analysis,  and `Sensitive Analysis'}}\label{residual-analysis-and-sensitive-analysis}}
+
+The next step is to compare the quality of the model. First we will take
+a look at the (distribution of the) residuals and after that we will
+calculate the out-of-sample \ac{RMSE} for the 2020 \emph{FIFA} data set.
+
+\hypertarget{residual-analysis}{%
+\subsection{Residual Analysis}\label{residual-analysis}}
+
+Residues are defined as the difference between the predicted value of
+the model and the actual value. As you can see from equation
+\eqref{eq:res}, negative residuals mean that the model overestimates the
+value and positive residuals mean that the model underestimates the
+value. \autocite[p.~16]{hayashi_econometrics_2000}
+
+\begin{align} 
+\label{eq:res}
+  \epsilon =  y_i - \hat{y}_i =  y_i - (  \beta_0  + \pmb{\beta}_i \pmb{X})
+\end{align}
+
+One crucial assumption of the linear regression is that the residuals
+are normally distributed with mean \(0\) and constant variance
+\(\sigma^2\).
+
+\begin{figure}
+
+\includegraphics[width=1\linewidth]{C:/Users/HP/Documents/GitHub/bayes/04_output/pl_bay_res} \hfill{}
+
+\caption{ \label{fig:res_bay} Plot of the Residuals vs Fitted Values for the Bayesian LASSO}\label{fig:fig2}
+\end{figure}
+
+In Figure \ref{fig:res_bay} the residuals versus the fitted values were
+plotted and it appears that several assumptions are violated, on a first
+glance. On the other hand there seem to be clusters of different
+variances. The variance in the range between 10 and 13 seems to be
+larger than the variance between 15 and 18, which could be a sign for
+heteroscedasticity.
+
+Furthermore, the model seems to have a systematic estimation error at
+high values, all values above 16 all residuals are negative, i.e.~the
+model overestimates the value of the players. Generally it can be said
+that a pattern can be recognized and the residuals do not appear
+distributed independently of each other.
+
+\begin{figure}
+
+\includegraphics[width=1\linewidth]{C:/Users/HP/Documents/GitHub/bayes/04_output/pl_bay_res_dens} \hfill{}
+
+\caption{ \label{fig:den_res_bay} Distribution of the Residuals of the Bayesian LASSO}\label{fig:fig_dens_2}
+\end{figure}
+
+The distribution of the residuals also does not seem to be normally
+distributed with a mean value of 0. In Figure \ref{fig:den_res_bay} it
+seems os that the left tail is distributed much longer and wider than
+the right tail.
+
+The empirical mean of the residuals is -0.0138247, which is significant
+at a one percent level with a t-static of -7.63 and a p-value of
+2.50e-14.
+
+Verteilung der Residuen plotten
+
+Structur bruch? Varianz wenig hohe werte systemastisch unterschätzt
+ausreißer
+
+\hypertarget{section-2}{%
+\subsection{\texorpdfstring{\ac{RMSE}}{}}\label{section-2}}
+
+As mentioned in the first Section we will use the data from \emph{2020}
+as test data.
+
+We used
+
+The measurment to compare the results will be the \acf{RMSE}, which is
+definied as:
+
+\begin{align*} 
+  RMSE = \sqrt{ \dfrac{ \displaystyle \sum_{i = 1}^{N} \left( \hat{y}_i  - y_i \right)^2} {N}    }
+\end{align*}
 
 \FloatBarrier
-\begin{table}[!h]
-
-\caption{\label{tab:tabel_bayes_1}\label{tab:sum_bay_hy} Summary of the  Bayessian LASSO with hyperpriors}
-\centering
-\begin{tabular}[t]{lrrr}
-\toprule
-  & median & 2.5\% & 97.5\%\\
-\midrule
-\rowcolor{gray!6}  log\_wage & 0.067405 & 0.061796 & 0.072935\\
-age & -0.100695 & -0.102174 & -0.099112\\
-\rowcolor{gray!6}  height\_cm & 0.001274 & 0.000000 & 0.002045\\
-weight\_kg & 0.000000 & 0.000000 & 0.000446\\
-\rowcolor{gray!6}  overall & 0.209832 & 0.208392 & 0.211174\\
-potential & -0.005893 & -0.007389 & -0.004306\\
-\rowcolor{gray!6}  shooting & 0.004792 & 0.004169 & 0.005301\\
-contract\_valid\_until & 0.004703 & 0.000000 & 0.007556\\
-\rowcolor{gray!6}  pace & 0.000497 & 0.000000 & 0.001049\\
-passing & 0.001454 & 0.000000 & 0.002508\\
-\rowcolor{gray!6}  dribbling & -0.000977 & -0.002296 & 0.000000\\
-defending & -0.001553 & -0.001958 & -0.001094\\
-\rowcolor{gray!6}  variance & 0.057671 & 0.056589 & 0.058846\\
-lambda.square & 0.000087 & 0.000028 & 0.000340\\
-\bottomrule
-\end{tabular}
-\end{table}
-\FloatBarrier
-
-\hypertarget{and-sensitive-analysis}{%
-\section{\texorpdfstring{\acf{RMSE} and \enquote{Sensitive
-Analysis}}{ and `Sensitive Analysis'}}\label{and-sensitive-analysis}}
-
 \begin{table}[!h]
 
 \caption{\label{tab:sensity }\label{tab:sum_bay_hy_1} Summary of the  Bayessian LASSO with hyperpriors}
@@ -731,12 +820,38 @@ lambda.square & 0.000087 & 0.000028 & 0.000340\\
 \bottomrule
 \end{tabular}
 \end{table}
+\FloatBarrier
+
+\newpage
 
 \hypertarget{discussion-and-further-research}{%
 \section{Discussion and further
 research}\label{discussion-and-further-research}}
 
-LaSt Part \newpage
+Struckturbruch LaSt Part
+
+\newpage
+
+\hypertarget{appendix}{%
+\section{Appendix}\label{appendix}}
+
+\(\quad\)
+
+\begin{figure}
+
+\includegraphics[width=1\linewidth]{C:/Users/HP/Documents/GitHub/bayes/04_output/pl_lin_res} \hfill{}
+
+\caption{ \label{fig:res_lm} Plot of the Residuals vs Fitted Values for the Linear Model}\label{fig:fig3}
+\end{figure}
+
+\begin{figure}
+
+\includegraphics[width=1\linewidth]{C:/Users/HP/Documents/GitHub/bayes/04_output/pl_las_res} \hfill{}
+
+\caption{ \label{fig:res_lasso} Plot of the Residuals vs Fitted Values for the LASSO Model}\label{fig:fig4}
+\end{figure}
+
+\newpage
 \newpage
 \renewcommand*{\mkbibnamefamily}[1]{\textbf{#1}}
 \renewcommand*{\mkbibnamegiven}[1]{\textbf{#1}}

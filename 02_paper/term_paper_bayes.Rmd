@@ -1,7 +1,7 @@
 ---
 title: 'Bayes Seminar'
 author: 'Jens Klenke'
-subtitle: "Advanced R for Econometricians"
+subtitle: "Seminar in Econometrics"
 type: "Seminar Paper"
 discipline: "VWL M.Sc."
 date: "today"
@@ -54,6 +54,10 @@ source("packages/packages.R")
 In recent years, the \ac{LASSO} method of @tibshirani_regression_1996 has emerged as an alternative to ordinary least squares estimation. The success of the method is mainly due to its ability to perform both variable selection and estimation. As already Tibshirani pointed out in his original paper the standard \ac{LASSO} model can be interpreted as a linear regression with a Laplace prior. @park_bayesian_2008 where the first to implement the Bayesian l\ac{LASSO} >>using a conditional Laplace prior specification<<.
 
 Our goal is to compare the result of the Bayesian \ac{LASSO} with normal \ac{LASSO} method and an ordinary least square estimation. The focus is particularly on the number of non-significant parameters in the linear model or, in case of the \acp{LASSO} the parameters equal to zero.  
+
+
+Relevanz and structure
+
 
 \newpage
 
@@ -225,19 +229,22 @@ As can be seen for the variable value in Figure \ref{fig:hist_1}, this relativel
 
 # Used Models
 
-To compare the Bayesian \ac{LASSO} we will analyse the data also with a linear multivariate model, and the frequentist \ac{LASSO}. We wil start with the linear model and will modifie the model equations step by step forwards the bayesian version. 
+To compare the Bayesian \ac{LASSO} we will also analyse the data with a linear multivariate model, and the frequentist \ac{LASSO}. We will start with the linear model and then gradually modify the model equations respectively the condition for estimating the parameters. So that the coherences between the individual methods become clear.  
 
+All three methods have the common assumption that the relationship is linear, at least in the parameters. The assumption seems stricter than it is at first, because the data can be manipulated in such a way that the relationship is linear after all. In our data, this was done by logarithmization.  
 
 ## Linear Model
 
-The frequentist multivariate regression model has the follwing model equation. 
+The frequentist multivariate regression  model has the follwing model equation. 
 
 \begin{align}
 \label{eq:lm}
 \pmb{Y = \beta_0 + X \beta} + \pmb{\epsilon}
 \end{align}
 
-Where $\pmb{y}$ is the $n \times 1$ response vector, $\pmb{X}$ is the $n \times p$ matrix of regressors and, $\pmb{\epsilon}$ is the $n \times 1$ vecotr of \ac{i.i.d.} errors with mean 0 and unknown variance $\sigma^2$. The coefficient will be estimated by the ordinary least square method, which means that $\pmb{\beta}$ should be chosen so that the _Euclidean norm_ $\left( || \mathbf{y - X\beta} ||_2 \right)$ is minimal. This yields in the conditon for the estimation of coefficients:
+Where $\pmb{y}$ is the $n \times 1$ response vector, $\pmb{X}$ is the $n \times p$ matrix of regressors and, $\pmb{\epsilon}$ is the $n \times 1$ vecotr of \ac{i.i.d.} errors with mean 0 and unknown variance $\sigma^2$. 
+
+The coefficient will be estimated by the ordinary least square method, which means that $\pmb{\beta}$ should be chosen so that the _Euclidean norm_ $\left( || \mathbf{y - X\beta} ||_2 \right)$ is minimal. This yields in the conditon for the estimation of coefficients:
 
 \begin{align}
 \label{eq:lm_con}
@@ -245,12 +252,10 @@ Where $\pmb{y}$ is the $n \times 1$ response vector, $\pmb{X}$ is the $n \times 
 \end{align}
 
 
-
-
 ## \acf{LASSO} 
 
 
-In the \ac{LASSO} method the model equation is the same as the equation for the multivariate but the condition for the optimization of the estimators in equation \eqref{eq:lm_con} has an additional punishment term.  Which leads to the optimazation of:  
+In the \ac{LASSO} method the model equation is the same as the equation for the multivariate but the condition for the optimization of the estimators in equation \eqref{eq:lm_con} has an additional punishment term.  Which leads to the following optimazation.   
 
 \begin{align}
 \label{eq:la_con}
@@ -260,9 +265,7 @@ In the \ac{LASSO} method the model equation is the same as the equation for the 
 
 for some $\lambda \geq 0$. This method is also often referred to as $L_1$ -penalized least squares estimation.  
 
-Already in his original paper @tibshirani_regression_1996 has pointed out the possibility that his methods can also be interpreted Bayesian. The LASSO estimates can be considered as posterior mode estimates with a double-exponential Laplace prior.
-
-<!-- (e.g., Figueiredo 2003; Bae and Mallick 2004; Yuan and Lin 2005-->
+Already in his original paper @tibshirani_regression_1996 has pointed out the possibility that his methods can also be interpreted in a Bayesian way. The LASSO estimates can be considered as posterior mode estimates with a double-exponential Laplace prior.
 
 
 ## Bayesian Lasso
@@ -276,43 +279,45 @@ Already in his original paper @tibshirani_regression_1996 has pointed out the po
 
 [@park_bayesian_2008]
 
-### Gibbs Sampler and the full Model specification
+### Gibbs Sampler and 
 
 The Gibbs Sampler is a special case of an \ac{MCMC} algorithm, which is useful to approximate the combianed distribution of two or more regressors in a multidemsinoal problem. 
 
 The algortithm tries to find the approximate joint distribution and therefore the algortihm runs through the subvectors $\beta$ and draws ach subset conditional on all other values. [@gelman_bayesian_2004]
 
 
-Bayesian \ac{LASSO} the Gibbs sampler in the __monomvn__ package in __R__ [@gramacy_monomvn_2019] samples from the following representation of the Laplace distribution 
+Bayesian \ac{LASSO} the Gibbs sampler in the __monomvn__ package in __R__ [@gramacy_monomvn_2019] samples from the following representation of the Laplace distribution. @andrews_scale_1974
 
 \begin{align} 
 \label{eq:gibbs}
   \dfrac{a}{2}e^{-a |z|} = \int_{0}^{\infty} \dfrac{1}{2 \sqrt{\sigma^2}} e^{ -z^2 / (2s)} \; \dfrac{a^2}{2} e^{ -a^2 s /2} ds, \qquad a > 0 
 \end{align}
 
-@andrews_scale_1974
+
+
+### The full Model specification
 
 The full model has the following hierarchical representation
 
-\begin{align} 
-\label{eq:hier}
+\begin{align*}
   \pmb{y|\mu}, \pmb{X}, \pmb{\beta}, \sigma^2 & \sim N_n (\mu \pmb{1}_n + \pmb{X \beta}, \sigma^2  \pmb{I}_n)   \nonumber\\
-  \pmb{\beta} | \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim N_p (\pmb{0}_p , \sigma^2 \pmb{D}_{\tau}) \nonumber \\
-  \pmb{D}_{\tau} & = diag(\tau^2_1 , \ldots , \tau^2_p)\\
+  \pmb{\beta} | \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim N_p (\pmb{A}^{-1} \pmb{X}^T \tilde{\pmb{y}}  , \sigma^2 \pmb{A}^{-1}) \qquad \pmb{A} = \pmb{X}^T \pmb{X} + \pmb{D}^{-1}_{\tau} \nonumber \\
+  \pmb{D}_{\tau} & = diag(\tau^2_1 , \ldots , \tau^2_p) \nonumber \\ 
   \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim \pi \left( \sigma^2 \right) d \sigma^2 \prod_{j = 1}^{p} \dfrac{\lambda^2}{2}e^{- \lambda^2 \tau^2_j /2} d \tau^2_j \nonumber \\
   \sigma^2, \tau^2_1 , \ldots , \tau^2_p & > 0 \nonumber \\
-\end{align}
+\end{align*}
 
-If $\tau^2_1 , \ldots , \tau^2_p$ gets integreted out of the conditional prior on $\pmb{\beta}$ , we get the form of \eqref{eq:la_bay_prior}. For $\sigma^2$ the inverse-gamma function of the form $\pi \left( \sigma^2 \right) = \dfrac{1}{\sigma^2}$ was implemented in the __monomvn__ package.    
-
-
-
-# Estimation of the Models  
+If $\tau^2_1 , \ldots , \tau^2_p$ gets integreted out of the conditional prior on $\pmb{\beta}$ , we get the form of \eqref{eq:la_bay_prior}. For $\sigma^2$ the inverse-gamma function of the form $\pi \left( \sigma^2 \right) = \dfrac{1}{\sigma^2}$ was implemented in the __monomvn__ package.     
 
 
-To compare the performances of the models all three models got, obviously, estimated with the same regressors.  We included as righthand variables: _log_wage_ , _age_, _height_cm_, _weight_kg_, _overall_, _potential_, _shooting_, _contract_valid_until_, _pace_, _passing_, _dribbling_,  and _defending_ to predict the response variable _log_value_. 
+\newpage
+# Estimation and Results of the Models  
 
-## linear Model
+
+To compare the performances of the models all three models got, obviously, estimated with the same regressors.  We included as righthand variables: _log_wage_ , _age_, _height_cm_, _weight_kg_, _overall_, _potential_, _shooting_, _contract_valid_until_, _pace_, _passing_, _dribbling_,  and _defending_, so we have `r dim(train_x)[2]` to predict the response variable _log_value_. 
+
+## Linear Model
+
 \FloatBarrier
 ```{r structure and lm, echo = FALSE}
 
@@ -352,7 +357,7 @@ Table \ref{tab:sum_lm} also shows that some coefficients are relatively small bu
  glmnet_coef_k[glmnet_coef_k == 0] <- '-'
 ```
 
-For the frequentists \ac{LASSO} $\lambda$-parameter we used the __cv.glmnet__ cross-validation function from the __glmnet__ package  and we got a $\lambda$ of `r round(LA,5)` @hastle_glmnet_2019
+For the frequentists \ac{LASSO} we used the __cv.glmnet__ cross-validation function from the __glmnet__ package with 100 folds to gain $\lambda$. A $\lambda$ of `r round(LA_all$lambda.min,5)` minimized the mean cross-validated error. However, we used a lambda of  `r round(LA,5)` which is the largest $\lambda$ such that error is still within one standard error of the minimum.     @hastle_glmnet_2019
 
 
 ```{r , echo = FALSE}
@@ -363,6 +368,13 @@ For the frequentists \ac{LASSO} $\lambda$-parameter we used the __cv.glmnet__ cr
 # sum(glmnet_coef == 0)
 ```
 
+  
+As one can see in Table \ref{tab:sum_lasso} there are significant differences to the linear system of equations. Lasso has shrunk `r sum(glmnet_coef == 0)` parameters so much that they are no longer included in the model equation.  It may be particularly noticeable, because it seems contra intuitive and it had the biggest impact in the linear model from the `r sum(glmnet_coef == 0)` excluded parameters, that the variable _contract_valif_until_ is also not represented in the model.  
+
+Since LASSO does not only estimate regressors, but also selects them, no significance tests are needed 
+
+
+\newpage
 ## Bayesian Lasso 
 
 ### Settings of the hyperparameters 
@@ -377,10 +389,11 @@ For the frequentists \ac{LASSO} the $\lambda$-parameter was `r round(LA, 5)`, so
 \FloatBarrier
 The expectations are replaced with averages from the previous Gibbs sampler. As @park_bayesian_2008 has shown any non extrem starting value for $\lambda$ can be used. In the first setting we did not pass any parameters for $\alpha \, \text{and} \, \beta$. 
 
+\FloatBarrier
+
 ```{r , echo = FALSE}
  
  ### bayes LASSO ###
-
 #source("01_code/bayes.R")
 load(file = here::here('04_output/bayes_lasso_fit.RData'))
 
@@ -393,7 +406,7 @@ coef_lasso <- as.data.frame(cbind(beta1 = bayes_lasso_fit$beta[, "b.1"],
                                    beta7 = bayes_lasso_fit$beta[, "b.7"],
                                    beta8 = bayes_lasso_fit$beta[, "b.8"],
                                    beta9 = bayes_lasso_fit$beta[, "b.9"],
-                                   beta10 = bayes_lasso_fit$beta[, "b.10"],                                                               beta11 = bayes_lasso_fit$beta[, "b.11"],
+                                   beta10 = bayes_lasso_fit$beta[, "b.10"],                                                                       beta11 = bayes_lasso_fit$beta[, "b.11"],
                                    beta12 = bayes_lasso_fit$beta[, "b.12"],
                                    variance = bayes_lasso_fit$s2,
                                    lambda.square = bayes_lasso_fit$lambda2))
@@ -426,27 +439,36 @@ coef_lasso <- as.data.frame(cbind(beta1 = bayes_lasso_fit$beta[, "b.1"],
 
 ```
 
-As one can see in Tabel \ref{tab:sum_bay} the _median_ for all regressors are unequal to zero, whereas for the frequentist \ac{LASSO} we have `r sum(glmnet_coef == 0)` coefficient which are directly ecluded from the model, e.g. zero. However, it is unlikely that for multidimensional bayesian model the median for a parameter is zero, since the computation depends on a Gibbs sampler. If we instead look at the 95 \%  credible interval we finde that `r sum(BA[,2] * BA[,3] <= 0)` of these intervall include the zero.  
-
 \FloatBarrier
+As one can see in Tabel \ref{tab:sum_bay} the _median_ for all regressors are unequal to zero, whereas for the frequentist \ac{LASSO} we have `r sum(glmnet_coef == 0)` coefficient which are directly ecluded from the model, e.g. zero. 
+
 ```{r tabel_bayes_1, echo = FALSE}
  HY <- cbind(colMedians(coef_lasso_hyper),
  matrixStats::colQuantiles(as.matrix(coef_lasso_hyper), probs = c(0.025, 0.975)))
  colnames(HY)[1] <- 'median'
  rownames(HY)[1:12] <- rownames(glmnet_coef_k)[2:13]
  
- knitr::kable(HY, digits = 6, caption = '\\label{tab:sum_bay_hy} Summary of the  Bayessian LASSO with hyperpriors', format.args = list(decimal.mark = '.', big.mark = " "),  booktabs = TRUE, linesep = "")%>%
-   kable_styling(latex_options = c("striped", "hold_position"))
+# knitr::kable(HY, digits = 6, caption = '\\label{tab:sum_bay_hy} Summary of the  Bayessian LASSO with hyperpriors', format.args = list(decimal.mark = '.', big.mark = " "),  booktabs = TRUE, linesep = "")%>%
+ #  kable_styling(latex_options = c("striped", "hold_position"))
 
 # sum(HY[,2] * HY[,3] <= 0)
 ```
-\FloatBarrier
 
-<!-- # Parameter Results  and (Posteriod-based) prediction  -->
+However, it is unlikely that for multidimensional bayesian model the median for a parameter is zero, since the computation depends on a Gibbs sampler. If we instead look at the 95 \%  credible interval we finde that `r sum(BA[,2] * BA[,3] <= 0)` of these intervall include the zero.  
 
-# \acf{RMSE} and 'Sensitive Analysis' 
 
-```{r, echo = FALSE}
+
+
+
+
+\newpage
+# Residual Analysis, \acf{RMSE} and 'Sensitive Analysis' 
+
+The next step is to compare the quality of the model. First we will take a look at the (distribution of the) residuals and after that we will calculate the out-of-sample \ac{RMSE} for the 2020 _FIFA_ data set. 
+
+
+
+```{r RMSE, echo = FALSE}
 rmse_lm <-modelr::rmse(fit_lm, test)
 
 ##own RMSE Function
@@ -481,24 +503,6 @@ rmse_freq_las <- own_rmse(y_hat_freq_las, test$log_value)
 ###predicting Bayesian Lasso
 
 y_hat_bay_las <- rep(median(bayes_lasso_fit$mu), length(test$log_wage))+
-  HY[1,1]*test$log_wage +
-  HY[2,1]*test$age +
-  HY[3,1]*test$height_cm +
-  HY[4,1]**test$weight_kg +
-  HY[5,1]*test$overall +
-  HY[6,1]*test$potential +
-  HY[7,1]*test$shooting +
-  HY[8,1]*test$contract_valid_until +  
-  HY[9,1]*test$pace +
-  HY[10,1]*test$passing +
-  HY[11,1]*test$dribbling +   
-  HY[12,1]*test$defending   
-
-rmse_bay_las <- own_rmse(y_hat_bay_las , test$log_value)
-
-###predicting Bayesian Lasso with hyper perameter
-
-y_hat_bay_las_hy <- rep(median(bayes_lasso_fit_hyper$mu), length(test$log_wage))+
   BA[1,1]*test$log_wage +
   BA[2,1]*test$age +
   BA[3,1]*test$height_cm +
@@ -512,27 +516,137 @@ y_hat_bay_las_hy <- rep(median(bayes_lasso_fit_hyper$mu), length(test$log_wage))
   BA[11,1]*test$dribbling +   
   BA[12,1]*test$defending   
 
+rmse_bay_las <- own_rmse(y_hat_bay_las , test$log_value)
+
+###predicting Bayesian Lasso with hyper perameter
+
+y_hat_bay_las_hy <- rep(median(bayes_lasso_fit_hyper$mu), length(test$log_wage))+
+  HY[1,1]*test$log_wage +
+  HY[2,1]*test$age +
+  HY[3,1]*test$height_cm +
+  HY[4,1]**test$weight_kg +
+  HY[5,1]*test$overall +
+  HY[6,1]*test$potential +
+  HY[7,1]*test$shooting +
+  HY[8,1]*test$contract_valid_until +  
+  HY[9,1]*test$pace +
+  HY[10,1]*test$passing +
+  HY[11,1]*test$dribbling +   
+  HY[12,1]*test$defending   
+
 rmse_bay_las_hyp <- own_rmse(y_hat_bay_las_hy , test$log_value)
+
+load( file = here::here('04_output/fitted.RData'))
+
+res_bayes <- (train_y - fitted_va_bayes)
+colnames(res_bayes) <- 'resdiuals'
 
 ```
 
 
+## Residual Analysis
+Residues are defined as the difference between the predicted value of the model and the actual value. As you can see from equation \eqref{eq:res}, negative residuals mean that the model overestimates the value and positive residuals mean that the model underestimates the value.   [@hayashi_econometrics_2000, p. 16]
+
+\begin{align} 
+\label{eq:res}
+  \epsilon =  y_i - \hat{y}_i =  y_i - (  \beta_0  + \pmb{\beta}_i \pmb{X})
+\end{align}
+
+One crucial assumption of the linear regression is that the residuals are normally distributed with mean $0$ and constant variance $\sigma^2$. 
+
+```{r, , fig2, echo = FALSE, fig.cap = " \\label{fig:res_bay} Plot of the Residuals vs Fitted Values for the Bayesian LASSO",  out.width = '100%',  fig.align = "left"}
+  knitr::include_graphics(here::here('04_output/pl_bay_res.png'), auto_pdf = FALSE)
+```
+
+In Figure \ref{fig:res_bay} the residuals versus the fitted values were plotted and it appears that several assumptions are violated, on a first glance. On the other hand there seem to be clusters of different variances. The variance in the range between 10 and 13 seems to be larger than the variance between 15 and 18, which could be a sign for heteroscedasticity. 
+
+Furthermore, the model seems to have a systematic estimation error at high values, all values above 16 all residuals are negative, i.e. the model overestimates the value of the players. Generally it can be said that a pattern can be recognized and the residuals do not appear distributed independently of each other. 
 
 
+```{r, , fig_dens_2, echo = FALSE, fig.cap = " \\label{fig:den_res_bay} Distribution of the Residuals of the Bayesian LASSO",  out.width = '100%',  fig.align = "left"}
+   knitr::include_graphics(here::here('04_output/pl_bay_res_dens.png'), auto_pdf = FALSE)
+```
+
+The distribution of the residuals also does not seem to be normally distributed with a mean value of 0. In Figure \ref{fig:den_res_bay} it seems os that the left tail is distributed much longer and wider than the right tail.
+
+The empirical mean of the residuals is `r mean(as.matrix(res_bayes))`, which is significant at a one percent level with a t-static of `r round(t.test(as.matrix(res_bayes))$statistic, 2) ` and a p-value of `r formatC( t.test(as.matrix(res_bayes))$p.value, format = "e", digits = 2)`.    
+
+
+
+
+
+
+
+
+
+
+
+
+Verteilung der Residuen plotten
+
+Structur bruch? 
+Varianz
+wenig hohe werte systemastisch unterschätzt ausreißer 
+
+
+
+
+
+
+
+## \ac{RMSE}
+
+
+ As mentioned in the first Section we will use the data from _2020_ as test data.  
+
+We used 
+
+The measurment to compare the results will be the \acf{RMSE}, which is definied as:
+
+\begin{align*} 
+  RMSE = \sqrt{ \dfrac{ \displaystyle \sum_{i = 1}^{N} \left( \hat{y}_i  - y_i \right)^2} {N}    }
+\end{align*}
+
+
+
+<!-- hyper -->
+
+\FloatBarrier
 ```{r sensity , echo = FALSE }
  HY <- cbind(colMedians(coef_lasso_hyper),
  matrixStats::colQuantiles(as.matrix(coef_lasso_hyper), probs = c(0.025, 0.975)))
  colnames(HY)[1] <- 'median'
  rownames(HY)[1:12] <- rownames(glmnet_coef_k)[2:13]
- 
- knitr::kable(HY, digits = 6, caption = '\\label{tab:sum_bay_hy_1} Summary of the  Bayessian LASSO with hyperpriors', format.args = list(decimal.mark = '.', big.mark = " "),  booktabs = TRUE, linesep = "")%>%
+  knitr::kable(HY, digits = 6, caption = '\\label{tab:sum_bay_hy_1} Summary of the  Bayessian LASSO with hyperpriors', format.args = list(decimal.mark = '.', big.mark = " "),  booktabs = TRUE, linesep = "")%>%
    kable_styling(latex_options = c("striped", "hold_position"))
 
 # sum(HY[,2] * HY[,3] <= 0)
 ```
+\FloatBarrier
 
 
+\newpage
 # Discussion and further research 
-
+Struckturbruch
 LaSt Part
+
+\newpage
+
+
+
+# Appendix
+
+$\quad$
+
+```{r, , fig3, echo = FALSE, fig.cap = " \\label{fig:res_lm} Plot of the Residuals vs Fitted Values for the Linear Model",  out.width = '100%',  fig.align = "left"}
+  knitr::include_graphics(here::here('04_output/pl_lin_res.png'), auto_pdf = FALSE)
+```
+
+
+```{r, , fig4, echo = FALSE, fig.cap = " \\label{fig:res_lasso} Plot of the Residuals vs Fitted Values for the LASSO Model",  out.width = '100%',  fig.align = "left"}
+  knitr::include_graphics(here::here('04_output/pl_las_res.png'), auto_pdf = FALSE)
+```
+
+
+
 \newpage
