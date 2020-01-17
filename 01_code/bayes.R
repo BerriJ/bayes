@@ -92,7 +92,7 @@ train_x <- train %>%
 
 #### model 
 
-IT <- 100
+IT <- 10000
 BURN <- IT *0.25
 
 
@@ -103,7 +103,7 @@ tictoc::toc()
 
 tictoc::tic()
 bayes_lasso_fit_hyper <- blasso(as.matrix(train_x), as.matrix(train_y), 
-                          T = IT ,  thin = BURN, lambda2 = 10, rd = c(1, 1.78))
+                          T = IT ,  thin = BURN, rd = c(1, 1.78))
 tictoc::toc()
 
 

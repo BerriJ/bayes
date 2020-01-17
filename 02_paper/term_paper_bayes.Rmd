@@ -1,8 +1,8 @@
 ---
-title: 'Bayes Seminar'
+title: 'Analysing FIFA Data with the Bayesian LASSO'
 author: 'Jens Klenke'
-subtitle: "Seminar in Econometrics"
-type: "Seminar Paper"
+subtitle: 'Seminar in Econometrics'
+type: "Term Paper"
 discipline: "VWL M.Sc."
 date: "today"
 studid: "3071594"
@@ -51,13 +51,13 @@ source("packages/packages.R")
 
 # Introduction
 
-In recent years, the \ac{LASSO} method of @tibshirani_regression_1996 has emerged as an alternative to ordinary least squares estimation. The success of the method is mainly due to its ability to perform both variable selection and estimation. As already Tibshirani pointed out in his original paper the standard \ac{LASSO} model can be interpreted as a linear regression with a Laplace prior. @park_bayesian_2008 where the first to implement the Bayesian l\ac{LASSO} >>using a conditional Laplace prior specification<<.
+In recent years, the \ac{LASSO} method by @tibshirani_regression_1996 has emerged as an alternative to ordinary least squares estimation. The success of the method is mainly due to its ability to perform both variable selection and estimation. As Tibshirani already pointed out in his original paper the standard \ac{LASSO} model can be interpreted as a linear regression with a Laplace prior. @park_bayesian_2008 were the first to implement the Bayesian \ac{LASSO} >>using a conditional Laplace prior specification<<.
 
-Our goal is to compare the result of the Bayesian \ac{LASSO} with normal \ac{LASSO} method and an ordinary least square estimation. The focus is particularly on the number of non-significant parameters in the linear model or, in case of the \acp{LASSO} the parameters equal to zero.  
+Our goal is to compare the results of the Bayesian \ac{LASSO} with the normal \ac{LASSO} method and an ordinary least square estimation. The focus is particularly on the number of non-significant parameters in the linear model or, in case of the \acp{LASSO} the parameters equal to zero. To compare the different methods we will use the FIFA data sets from 2019 and 2020.   
 
+Bayesian statistics has grown very strongly in recent years. This is due to the improvement of computers which have made the calculation possible in the first place. Now they make it possible to calculate these methods in increasing numbers and in even shorter time. In view of these changes, it seems logical that the Bayesian LASSO should be used more and more often, since this method can select variables and also estimate variables by means of distributions. This leads to the fact that the advantages of LASSO and Bayesian statistics come together. Nevertheless, the Bayesian methods still take much longer to calculate than the frequentist methods. Therefore, in this paper we want to analyze whether the Bayesian LASSO has an advantage over the frequentist LASSO. 
 
-Relevanz and structure
-
+In the first chapter we will present the general approach of Bayesian statistics. Afterwards, we will describe the data  basis and preparation. The next step is to introduce the methods used and to present the results. Before we will draw a conclusion, the models will be analyzed with respect to their residuals. 
 
 \newpage
 
@@ -70,14 +70,23 @@ The Bayesian (inference) statistics based on the Bayes' theorem for events.
   P(A | B) = \dfrac{P (B | A) P(A)}{P(B)}
 \end{align}
 
-For Bayesian statistics the event theorem gets \eqref{eq:bayes_theorem} rewritten to apply it to densities. Where $\pi (\theta)$ is the prior distribution - which could be gained from prior research or knowledge, $f(y | \theta )$ is the likelihood function, and $\pi (\theta| y)$ is the posterior distribution, we then get the following. 
+For Bayesian statistics the event theorem \eqref{eq:bayes_theorem} gets rewritten to apply it to densities. 
+
+Where $\pi (\theta)$ is the prior distribution - which could be gained from prior research or knowledge, $f(y | \theta )$ is the likelihood function, and $\pi (\theta| y)$ is the posterior distribution, which then yields in the following equation:
+
 
 \begin{align}
 \label{eq:bayes_dens}
   \pi (\theta | y) = \dfrac{f(y | \theta) \pi(\theta)}{f(y)}
 \end{align}
 
-From \eqref{eq:bayes_dens} the advantages and disadvantages of Bayesian statistics compared to frequentist statistics can directly be retrieved. One major advantage is that the Bayesian approach can account for prior knowledge and points out a philosophical difference to the frequentist approach - that the obtained data stands not alone. Another, key difference and advantage is that in the Bayesian world the computations are made with distributions and this leads to a better information level than just the computation of the first and second moment. The computation of distributions is also the greatest disadvantages or more neutral the biggest problem of the Bayesian approach because in high dimensional problems the computation takes a lot of times or is sometimes even not possible. A solution to that is that with newer and better computers it is possible to simulate the integrals with a \ac{MCMC} method.  [@ghosh_introduction_2006, p. 100] PAGE NUMBER!! 
+From equation \eqref{eq:bayes_dens} the advantages and disadvantages of Bayesian statistics compared to frequentist statistics can directly be retrieved. One major advantage is that the Bayesian approach can account for prior knowledge and points out a philosophical difference to the frequentist approach - that the obtained data stands not alone. 
+
+Another key difference and advantage is that in the Bayesian statistic the computations are made with distributions and this leads to a better information level than just the computation of the first and second moment. 
+
+The computation with distributions is also the greatest disadvantage or -  more neutral - the biggest problem of the Bayesian approach because in high dimensional problems the computation takes a lot of time and in some cases it is even impossible. A solution to that is that with newer and better computers it is possible to simulate the integrals with a \ac{MCMC} method.  [@ghosh_introduction_2006, p. 35 ff.] 
+
+
 \newpage
 
 # Data description 
@@ -201,7 +210,10 @@ knitr::kable(sum_var, digits = 2, caption = '\\label{tab:sum} Summary of some im
 
 ```
 
-As one can see in Table \ref{tab:sum} the differences between the editions for the most important variables are considerably small. For example,  from 2019 to 2020 the mean player _value_ (response variable) increased by `r scales::scientific(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), digits = 3)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Similar results are observable for the probably most important righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
+
+As one can see in Table \ref{tab:sum} the differences between the editions for the most important variables are considerably small. 
+
+For example,  from 2019 to 2020 the mean player _value_ (response variable) increased by `r scales::scientific(mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]), digits = 3)` which is about `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ mean(fifa_data$value_eur[fifa_data$year ==2020])*100 ,2) ` per cent or `r round((mean(fifa_data$value_eur[fifa_data$year ==2020]) - mean(fifa_data$value_eur[fifa_data$year ==2019]))/ sd(fifa_data$value_eur[fifa_data$year ==2020]),2)` standard deviations. Similar results are observable for the probably most important righthand variables _wage_ and _overall_  with a difference in the means of `r round((mean(fifa_data$wage_eur[fifa_data$year ==2020]) -mean(fifa_data$wage_eur[fifa_data$year ==2019]))/ sd(fifa_data$wage_eur[fifa_data$year ==2020]),2)` and `r round((mean(fifa_data$overall[fifa_data$year ==2020]) -mean(fifa_data$overall[fifa_data$year ==2019]))/ sd(fifa_data$overall[fifa_data$year ==2020]),3)` standard deviations between 2019 and 2020.     
 
 ```{r , fig1, echo = FALSE, fig.cap = " \\label{fig:hist_1} Histograms of player values and log player values"}
 
@@ -222,29 +234,29 @@ plot_grid(plot_1, plot_2, align = "v", nrow = 2, rel_heights = c(1/4, 1/4, 1/2))
 ```
 
 
-As can be seen for the variable value in Figure \ref{fig:hist_1}, this relatively strong right-skew is distributed, a similar pattern can be observed for the variable wage. Since we also estimate a linear model, and this often leads to non-normally distributed residuals, these were logarithmized.
+As can be seen for the variable _value_ in Figure \ref{fig:hist_1}, this relatively strong right-skew is distributed, a similar pattern can be observed for the variable wage. Since we also have estimate a linear model, and this often leads to non-normally distributed residuals, these were logarithmized.
 
 
 \newpage
 
 # Used Models
 
-To compare the Bayesian \ac{LASSO} we will also analyse the data with a linear multivariate model, and the frequentist \ac{LASSO}. We will start with the linear model and then gradually modify the model equations respectively the condition for estimating the parameters. So that the coherences between the individual methods become clear.  
+To compare the Bayesian \ac{LASSO} we will also analyze the data with a linear multivariate model, and the frequentist \ac{LASSO}. We will start with the linear model and then gradually modify the model equations respectively the condition for estimating the parameters. So that the coherences between the individual methods become clear.  
 
-All three methods have the common assumption that the relationship is linear, at least in the parameters. The assumption seems stricter than it is at first, because the data can be manipulated in such a way that the relationship is linear after all. In our data, this was done by logarithmization.  
+All three methods have the common assumption that the relationship is linear, at least in the parameters. Inatially, the assumption seems stricter than it is, because the data can be manipulated in such a way that the relationship is linear after all. In our data this was done by logarithmization.  
 
 ## Linear Model
 
-The frequentist multivariate regression  model has the follwing model equation. 
+The frequentist multivariate regression  model has the following model equation. 
 
 \begin{align}
 \label{eq:lm}
 \pmb{Y = \beta_0 + X \beta} + \pmb{\epsilon}
 \end{align}
 
-Where $\pmb{y}$ is the $n \times 1$ response vector, $\pmb{X}$ is the $n \times p$ matrix of regressors and, $\pmb{\epsilon}$ is the $n \times 1$ vecotr of \ac{i.i.d.} errors with mean 0 and unknown variance $\sigma^2$. 
+Where $\pmb{y}$ is the $n \times 1$ response vector, $\pmb{X}$ is the $n \times p$ matrix of regressors and, $\pmb{\epsilon}$ is the $n \times 1$ vector of \ac{i.i.d.} errors with mean 0 and unknown but constant variance $\sigma^2$. 
 
-The coefficient will be estimated by the ordinary least square method, which means that $\pmb{\beta}$ should be chosen so that the _Euclidean norm_ $\left( || \mathbf{y - X\beta} ||_2 \right)$ is minimal. This yields in the conditon for the estimation of coefficients:
+The coefficient will be estimated by the ordinary least square method, which means that $\pmb{\beta}$ should be chosen so that the _Euclidean norm_ $\left( || \mathbf{y - X\beta} ||_2 \right)$ is minimal. This yields in the condition for the estimation of coefficients:
 
 \begin{align}
 \label{eq:lm_con}
@@ -255,7 +267,7 @@ The coefficient will be estimated by the ordinary least square method, which mea
 ## \acf{LASSO} 
 
 
-In the \ac{LASSO} method the model equation is the same as the equation for the multivariate but the condition for the optimization of the estimators in equation \eqref{eq:lm_con} has an additional punishment term.  Which leads to the following optimazation.   
+In the \ac{LASSO} method the model equation is the same as the equation for the multivariate but the condition for the optimization of the estimators in equation \eqref{eq:lm_con} has an additional punishment term.  Which leads to the following optimization.   
 
 \begin{align}
 \label{eq:la_con}
@@ -277,16 +289,18 @@ Already in his original paper @tibshirani_regression_1996 has pointed out the po
  \pi \left( \pmb{\beta} | \sigma^2 \right)   = \prod_{j = 1}^{p} \dfrac{\lambda}{2 \sqrt{\sigma^e}} e^{\dfrac{- \lambda |\beta_j |}{\sqrt{\sigma^2}}} 
 \end{align}
 
-[@park_bayesian_2008]
 
-### Gibbs Sampler and 
+The analysis of the FIFA data set is a multidimensional problem and therefore in Bayesian statistics this is an analysis that only works with a hierarchical model. The solution cannot be calculated directly but has to be solved with the Gibbs sampler.
 
-The Gibbs Sampler is a special case of an \ac{MCMC} algorithm, which is useful to approximate the combianed distribution of two or more regressors in a multidemsinoal problem. 
+### Gibbs Sampler  
 
-The algortithm tries to find the approximate joint distribution and therefore the algortihm runs through the subvectors $\beta$ and draws ach subset conditional on all other values. [@gelman_bayesian_2004]
+The Gibbs Sampler is a special case of an \ac{MCMC} algorithm, which is useful to approximate the combined distribution of two or more regressors in a multidimensional problem. 
 
+The algorithm tries to find the approximate joint distribution and therefore the algorithm  runs through the sub-vectors of $\beta$ and draws each subset conditional on all other values. [@gelman_bayesian_2004]
 
-Bayesian \ac{LASSO} the Gibbs sampler in the __monomvn__ package in __R__ [@gramacy_monomvn_2019] samples from the following representation of the Laplace distribution. @andrews_scale_1974
+\newpage
+
+In the __monomvn__ package in __R__ [@gramacy_monomvn_2019] the Gibbs sampler for the  Bayesian \ac{LASSO} samples from the following representation of the Laplace distribution. @andrews_scale_1974
 
 \begin{align} 
 \label{eq:gibbs}
@@ -301,20 +315,25 @@ The full model has the following hierarchical representation
 
 \begin{align*}
   \pmb{y|\mu}, \pmb{X}, \pmb{\beta}, \sigma^2 & \sim N_n (\mu \pmb{1}_n + \pmb{X \beta}, \sigma^2  \pmb{I}_n)   \nonumber\\
-  \pmb{\beta} | \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim N_p (\pmb{A}^{-1} \pmb{X}^T \tilde{\pmb{y}}  , \sigma^2 \pmb{A}^{-1}) \qquad \pmb{A} = \pmb{X}^T \pmb{X} + \pmb{D}^{-1}_{\tau} \nonumber \\
+  \pmb{\beta} | \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim N_p (\pmb{A}^{-1} \pmb{X}^T \tilde{\pmb{y}}  , \sigma^2 \pmb{A}^{-1}) \qquad \text{with} \; \pmb{A} = \pmb{X}^T \pmb{X} + \pmb{D}^{-1}_{\tau} \nonumber \\
   \pmb{D}_{\tau} & = diag(\tau^2_1 , \ldots , \tau^2_p) \nonumber \\ 
   \sigma^2, \tau^2_1 , \ldots , \tau^2_p & \sim \pi \left( \sigma^2 \right) d \sigma^2 \prod_{j = 1}^{p} \dfrac{\lambda^2}{2}e^{- \lambda^2 \tau^2_j /2} d \tau^2_j \nonumber \\
   \sigma^2, \tau^2_1 , \ldots , \tau^2_p & > 0 \nonumber \\
 \end{align*}
 
-If $\tau^2_1 , \ldots , \tau^2_p$ gets integreted out of the conditional prior on $\pmb{\beta}$ , we get the form of \eqref{eq:la_bay_prior}. For $\sigma^2$ the inverse-gamma function of the form $\pi \left( \sigma^2 \right) = \dfrac{1}{\sigma^2}$ was implemented in the __monomvn__ package.     
+If $\tau^2_1 , \ldots , \tau^2_p$ gets integrated out of the conditional prior on $\pmb{\beta}$ , we get the form of \eqref{eq:la_bay_prior}. For $\sigma^2$ the inverse-gamma function of the form $\pi \left( \sigma^2 \right) = \dfrac{1}{\sigma^2}$ was implemented in the __monomvn__ package.     
 
 
 \newpage
 # Estimation and Results of the Models  
 
 
-To compare the performances of the models all three models got, obviously, estimated with the same regressors.  We included as righthand variables: _log_wage_ , _age_, _height_cm_, _weight_kg_, _overall_, _potential_, _shooting_, _contract_valid_until_, _pace_, _passing_, _dribbling_,  and _defending_, so we have `r dim(train_x)[2]` to predict the response variable _log_value_. 
+To compare the performances of the models all three models got, obviously, estimated with the same regressors.  We included as righthand variables: _log_wage_ , _age_, _height_cm_, _weight_kg_, _overall_, _potential_, _shooting_, _contract_valid_until_, _pace_, _passing_, _dribbling_,  and _defending_, so we have `r dim(train_x)[2]` explanatory variables to predict the response variable _log_value_. 
+
+The reason we chose relatively few variables is that, on the one hand, we have enough variables, so it is very likely that some variables will not become significant, but on the other hand, we also have a better overview of the variables. 
+
+Of course, this can lead to biases in the parameters, but the aim of the work is not to provide a causal interpretation of the explanatory variables, but rather to compare the methods.   
+
 
 ## Linear Model
 
@@ -337,9 +356,16 @@ knitr::kable(summary(fit_lm)$coef, digits = 4, caption = '\\label{tab:sum_lm} Su
 ```
 \FloatBarrier
 
-In Table \ref{tab:sum_lm} one can see that only `r sum(summary(fit_lm)$coef[,4] > 0.05)` parameter is not significant to a 5 per cent level. The variable _overall_ has, naturally, the biggest (positive) impact on the _log_value (value)_, whereas _age_ has the biggest negative effect. 
+In Table \ref{tab:sum_lm} one can see that only `r sum(summary(fit_lm)$coef[,4] > 0.05)` parameter _weight_kg_ is not significant to a 5 per cent level. The variable _overall_ has, naturally, the biggest (positive) impact on the _log_value (value)_, whereas _age_ has the biggest negative effect. 
 
-Table \ref{tab:sum_lm} also shows that some coefficients are relatively small but still significant. However, a general problem with \ac{OLS} estimation is that with increasing sample size, many "coefficients" become significant. This is because the standard errors become smaller with increasing N, the t-statistic becomes larger, and the p-value smaller. These coefficients (e.g.: _pace_, or _passing_ ) could be zero in the \ac{LASSO} estimation because of the punishment term.   
+\begin{align} 
+\label{eq:t_test}
+  t = \dfrac{\beta_i - 0}{se \left( \beta_i \right)} = \dfrac{\beta_i - 0}{ \dfrac{s}{\sqrt{n}} }  
+\end{align}
+
+Table \ref{tab:sum_lm} also shows that some coefficients are relatively small but still significant. However, a general problem with \ac{OLS} estimation is that with increasing sample size, many "coefficients" become significant, as one can in equation \ref{eq:t_test} . This is because the standard errors become smaller with increasing N, the t-statistic becomes larger, and the p-value smaller. [@royall_effect_1986] 
+
+These coefficients (e.g.: _pace_, or _passing_ ) could be zero in the \ac{LASSO} or Bayesian \ac{LASSO} estimation because of the punishment term.   
 
 ## \acf{LASSO}
 
@@ -355,12 +381,6 @@ Table \ref{tab:sum_lm} also shows that some coefficients are relatively small bu
 
  glmnet_coef_k <- round(glmnet_coef,6)
  glmnet_coef_k[glmnet_coef_k == 0] <- '-'
-```
-
-For the frequentists \ac{LASSO} we used the __cv.glmnet__ cross-validation function from the __glmnet__ package with 100 folds to gain $\lambda$. A $\lambda$ of `r round(LA_all$lambda.min,5)` minimized the mean cross-validated error. However, we used a lambda of  `r round(LA,5)` which is the largest $\lambda$ such that error is still within one standard error of the minimum.     @hastle_glmnet_2019
-
-
-```{r , echo = FALSE}
 
  knitr::kable(glmnet_coef_k, digits = 6, caption = '\\label{tab:sum_lasso} Summary of the LASSO ', format.args = list(decimal.mark = '.', big.mark = " "),  col.names = c('Estimate'),  booktabs = TRUE, linesep = "")%>%
    kable_styling(latex_options = c("striped", "hold_position"))
@@ -368,18 +388,20 @@ For the frequentists \ac{LASSO} we used the __cv.glmnet__ cross-validation funct
 # sum(glmnet_coef == 0)
 ```
 
+For the frequentists \ac{LASSO} we used the __cv.glmnet__ cross-validation function from the __glmnet__ package with $100$ folds to gain an estimate for $\lambda$. A $\lambda$ of `r round(LA_all$lambda.min,5)` minimized the mean cross-validated error. However, we used a lambda of  `r round(LA,5)` which is the largest $\lambda$ such that the $\lambda$ is in still within one standard error of the minimum.     @hastle_glmnet_2019
+
   
-As one can see in Table \ref{tab:sum_lasso} there are significant differences to the linear system of equations. Lasso has shrunk `r sum(glmnet_coef == 0)` parameters so much that they are no longer included in the model equation.  It may be particularly noticeable, because it seems contra intuitive and it had the biggest impact in the linear model from the `r sum(glmnet_coef == 0)` excluded parameters, that the variable _contract_valif_until_ is also not represented in the model.  
-
-Since LASSO does not only estimate regressors, but also selects them, no significance tests are needed 
+As one can see in Table \ref{tab:sum_lasso} there are considerable differences to the \ac{OLS} results. The \ac{LASSO} method has shrunk `r sum(glmnet_coef == 0)` parameters so much that they are no longer included in the model equation.  
 
 
-\newpage
+It may be particularly noticeable, because it seems contra intuitive and the parameter had the biggest impact of all `r sum(glmnet_coef == 0)` excluded parameters in the linear model, that the variable _contract_valid_until_ is also not included in the model.  
+
+Since LASSO does not only estimate regressors, but also selects them, no significance tests are needed.  
+
+
 ## Bayesian Lasso 
 
-### Settings of the hyperparameters 
-
-In the __blasso__ function of the __R__ package __monomvn__ it is possible to set the hyperparameters $\lambda$, for the penalty term, and  $\alpha \,  \text{and} \, \beta$, which are the shape and rate parameter for the prior. The $\lambda$ is in our case an empirical parameter which will be approximate trhough an updating Gibbs sampler. The algorithm uses the parameter of the previous sample. So iteration $k$ uses the Gibbs sampler with hyperparmeter $k-1$.
+With the __blasso__ function of the __R__ package __monomvn__ it is possible to set the hyperparameters $\lambda$, for the penalty term, and  $\alpha \,  \text{and} \, \beta$, which are the shape and rate parameter for the prior. The $\lambda$ is in our case an empirical parameter which will be approximate through an updating Gibbs sampler. The algorithm uses the parameter of the previous sample. So iteration $k$ uses the Gibbs sampler with hyperparmeter $k-1$.
 For the frequentists \ac{LASSO} the $\lambda$-parameter was `r round(LA, 5)`, so we decided to set  $\lambda = 10$,  since the first $25  \%$ of the \ac{MCMC} are not used for the estimation and the sampler convergence rather quickly.  [@gramacy_monomvn_2019] 
 
 \FloatBarrier
@@ -387,9 +409,9 @@ For the frequentists \ac{LASSO} the $\lambda$-parameter was `r round(LA, 5)`, so
   \lambda^{k} = \sqrt{\dfrac{2p}{\displaystyle \sum_{j = 1}^{p} E_{\lambda^{(k-1)}} [\tau_j^2| \pmb{y}] }}
 \end{align*}
 \FloatBarrier
-The expectations are replaced with averages from the previous Gibbs sampler. As @park_bayesian_2008 has shown any non extrem starting value for $\lambda$ can be used. In the first setting we did not pass any parameters for $\alpha \, \text{and} \, \beta$. 
+The expectations are replaced with averages from the previous Gibbs sampler. As @park_bayesian_2008 has shown any non-extreme starting value for $\lambda$ can be used. In the first setting we did not pass any parameters for $\alpha \, \text{or} \, \beta$. 
 
-\FloatBarrier
+
 
 ```{r , echo = FALSE}
  
@@ -439,8 +461,8 @@ coef_lasso <- as.data.frame(cbind(beta1 = bayes_lasso_fit$beta[, "b.1"],
 
 ```
 
-\FloatBarrier
-As one can see in Tabel \ref{tab:sum_bay} the _median_ for all regressors are unequal to zero, whereas for the frequentist \ac{LASSO} we have `r sum(glmnet_coef == 0)` coefficient which are directly ecluded from the model, e.g. zero. 
+
+As one can see in Table \ref{tab:sum_bay} the _median_ for all regressors except, _weight_kg_, are unequal to zero, whereas for the frequentist \ac{LASSO} we had `r sum(glmnet_coef == 0)` coefficients which are directly excluded from the model, e.g. zero. 
 
 ```{r tabel_bayes_1, echo = FALSE}
  HY <- cbind(colMedians(coef_lasso_hyper),
@@ -454,18 +476,14 @@ As one can see in Tabel \ref{tab:sum_bay} the _median_ for all regressors are un
 # sum(HY[,2] * HY[,3] <= 0)
 ```
 
-However, it is unlikely that for multidimensional bayesian model the median for a parameter is zero, since the computation depends on a Gibbs sampler. If we instead look at the 95 \%  credible interval we finde that `r sum(BA[,2] * BA[,3] <= 0)` of these intervall include the zero.  
+However, it is unlikely that for multidimensional Bayesian model the median for a parameter is zero, since the computation depends on a Gibbs sampler. The Gibbs sampler itself is a special algorithm in the class of MCMC algorithms, which tries to solve the problem of integral formation with the help of random numbers. Therefore it is very unlikely to shrink parameters directly to 0.  
 
-
-
-
-
+If we instead look at the 95 \%  credible interval, which is the Bayesian equivalent to a confidence interval and the Bayesian equvivalent to a significant test, we find that `r sum(BA[,2] * BA[,3] <= 0)` of these intervals include the zero.  
 
 \newpage
 # Residual Analysis, \acf{RMSE} and 'Sensitive Analysis' 
 
-The next step is to compare the quality of the model. First we will take a look at the (distribution of the) residuals and after that we will calculate the out-of-sample \ac{RMSE} for the 2020 _FIFA_ data set. 
-
+The next step is to compare the quality of the models. First, we will take a look at the (distribution of the) residuals and after that we will calculate the out-of-sample \ac{RMSE} for the 2020 _FIFA_ data set. 
 
 
 ```{r RMSE, echo = FALSE}
@@ -545,7 +563,8 @@ colnames(res_bayes) <- 'resdiuals'
 
 
 ## Residual Analysis
-Residues are defined as the difference between the predicted value of the model and the actual value. As you can see from equation \eqref{eq:res}, negative residuals mean that the model overestimates the value and positive residuals mean that the model underestimates the value.   [@hayashi_econometrics_2000, p. 16]
+
+Residuals are defined as the difference between the actual value and the predicted value of the model. As you can see from equation \eqref{eq:res}, negative residuals mean that the model overestimates the value and positive residuals mean that the model underestimates the value.   [@hayashi_econometrics_2000, p. 16]
 
 \begin{align} 
 \label{eq:res}
@@ -558,58 +577,63 @@ One crucial assumption of the linear regression is that the residuals are normal
   knitr::include_graphics(here::here('04_output/pl_bay_res.png'), auto_pdf = FALSE)
 ```
 
-In Figure \ref{fig:res_bay} the residuals versus the fitted values were plotted and it appears that several assumptions are violated, on a first glance. On the other hand there seem to be clusters of different variances. The variance in the range between 10 and 13 seems to be larger than the variance between 15 and 18, which could be a sign for heteroscedasticity. 
+In Figure \ref{fig:res_bay} the residuals versus the fitted values were plotted and it appears that several assumptions are violated, on a first glance. On one hand it seems to be that there is a relationship between fitted values and residuals. On the other hand, there also seem to be clusters with different variances. The variance in the range between 10 and 13 seems to be larger than the variance between 15 and 18, which could be a sign for heteroscedasticity. 
 
-Furthermore, the model seems to have a systematic estimation error at high values, all values above 16 all residuals are negative, i.e. the model overestimates the value of the players. Generally it can be said that a pattern can be recognized and the residuals do not appear distributed independently of each other. 
-
+Furthermore, the model seems to have a systematic estimation error for high values, all estimated values above 16 have a  naegative residuum, i.e. the model overestimates the value of the players. Generally, it can be said that a pattern can be recognized and the residuals do not appear distributed independently of each other. 
 
 ```{r, , fig_dens_2, echo = FALSE, fig.cap = " \\label{fig:den_res_bay} Distribution of the Residuals of the Bayesian LASSO",  out.width = '100%',  fig.align = "left"}
    knitr::include_graphics(here::here('04_output/pl_bay_res_dens.png'), auto_pdf = FALSE)
 ```
 
-The distribution of the residuals also does not seem to be normally distributed with a mean value of 0. In Figure \ref{fig:den_res_bay} it seems os that the left tail is distributed much longer and wider than the right tail.
+The distribution of the residuals also does not seem to be normally distributed with a mean value of 0. In Figure \ref{fig:den_res_bay} it seems that the left tail is much longer and wider than the right tail.
 
-The empirical mean of the residuals is `r mean(as.matrix(res_bayes))`, which is significant at a one percent level with a t-static of `r round(t.test(as.matrix(res_bayes))$statistic, 2) ` and a p-value of `r formatC( t.test(as.matrix(res_bayes))$p.value, format = "e", digits = 2)`.    
+The empirical mean of the residuals is `r mean(as.matrix(res_bayes))`, which is significant different to zero at a one percent level with a t-static of `r round(t.test(as.matrix(res_bayes))$statistic, 2) ` and a p-value of `r formatC( t.test(as.matrix(res_bayes))$p.value , format = "e", digits = 2)`. For the residuals of the \ac{OLS} and the \ac{LASSO} model, the observations are the same, as shown in Figures \ref{fig:res_lm} and \ref{fig:res_lm_dens}  for the \ac{OLS} model and Figure \ref{fig:res_lasso} and \ref{fig:res_lasso_dens} for the \ac{LASSO} model in the Appendix.   
 
+Since the \acf{OLS} method is our base method for the comparison and we are mainly interested in comparing the number of parameters included (or excluded) in (from) the model. Therefore, the \ac{OLS} model was estimated again with corrected standard errors for heteroscedasticity.
 
-
-
-
-
-
-
+```{r ROBUST ,  echo = FALSE, }
+robust_lm <-summary(robustbase::lmrob(log_value ~ ., data = train) )
+```
 
 
+First of all, we performed  a Breusch-Pagan test for heteroscedasticity  which was significant to a 5\% level with a BP score of `r round(lmtest::bptest(fit_lm)$statistic, 2)` and a  p-value of $\approx$ `r formatC(lmtest::bptest(fit_lm)$p.value, format = "e", digits = 2)` and the non-constant variance score test of Breusch-Pagan test was also significant to a 5% level test with a $\chi^2$ score of `r round(car::ncvTest(fit_lm)$ChiSquare, 4)` and a p-value of `r car::ncvTest(fit_lm)$p`.
+
+With the corrected standard errors, `r sum(robust_lm$coefficients[,4]>0.05)` coefficients are no longer significant, which is `r sum(robust_lm$coefficients[,4]>0.05) - sum(summary(fit_lm)$coef[,4] > 0.05)` coefficient more as in the first \ac{OLS} model. 
+
+## \acf{RMSE} of the Models 
+
+As already mentioned in the introduction, we have taken the _FIFA_ data from _2020_ as test data. At least briefly, it should be noted here that the leap from the 2019 edition to the 2020 edition has added a further dimension. Between the two years there could be a trend, which could catch other effects like inflation, that increases player values without being explained by any of the variables in the model.  
+
+```{r year trend , echo = FALSE }
+com_fifa <- fifa_data%>% dplyr::select(vars,
+                                       year)
+trend_rob <- summary(robustbase::lmrob(log_value ~ ., data = com_fifa) )
+```
+
+In a quick check using a linear \ac{OLS} model containing the data for both years and a dummy for the different versions, we get a significant estimator of `r round( trend_rob$coefficients['year2020',1],4)`. This estimator is significant with corrected standard errors at a significance level of 5 percent with a t-value of `r round(trend_rob$coefficients['year2020',3],3)` and a p-value of `r formatC(trend_rob$coefficients['year2020',4] , format = "e", digits = 2)`. 
+
+The significant dummy for the _versions_ does not automatically mean that there is an annual trend. The main thing to keep in mind is that we excluded a number of variables at the beginning and that these can now be included in the dummy as a bias. 
 
 
-Verteilung der Residuen plotten
-
-Structur bruch? 
-Varianz
-wenig hohe werte systemastisch unterschätzt ausreißer 
-
-
-
-
-
-
-
-## \ac{RMSE}
-
-
- As mentioned in the first Section we will use the data from _2020_ as test data.  
-
-We used 
-
-The measurment to compare the results will be the \acf{RMSE}, which is definied as:
+However, all three models have the same problem and therefore this should not play a major role in the RMSE's assessment of the models. The RMSE should therefore increase equally for all three models. The \acf{RMSE} is calculated as follows:
 
 \begin{align*} 
   RMSE = \sqrt{ \dfrac{ \displaystyle \sum_{i = 1}^{N} \left( \hat{y}_i  - y_i \right)^2} {N}    }
 \end{align*}
 
+The \ac{RMSE} is a relative comparison measure that calculates the performance of different models using the same data set. If the \ac{RMSE} is determined with other data, as in this case with the 2020 data, it is called an out-of-sample RMSE.  
+
+The RMSE for the frequentist linear model is `r round(rmse_lm, 6)`, which in itself is difficult to interpret.  For the (frequentist) LASSO, the RMSE is `r round( rmse_freq_las, 6 )`, which is a reduction of `r round(((rmse_freq_las - rmse_lm) / rmse_lm)*100 ,2)` percent compared to the base linear regression.  
+
+For the Bayesian \ac{LASSO}, which was estimated with $12.500$ \ac{MCMC} iterations, $2.500$ of which were cut off at the beginning and were not used for the calculation. We get a \ac{RMSE} of `r round(rmse_bay_las,6)`, which is a change to \ac{OLS} of `r round(((rmse_bay_las - rmse_lm) / rmse_lm)*100 ,2)` percent. Compared to the frequentist \ac{LASSO} we get a reduction of the RMSE of `r round(((rmse_bay_las - rmse_freq_las) / rmse_freq_las)*100 ,2)` percent.   
 
 
-<!-- hyper -->
+The improvement in the \ac{RMSE} of the Bayesian model compared to the linear model is relatively small and is even smaller compared to the \ac{LASSO}. 
+However, the computational effort for the small improvement is relatively high. The linear model (with corrected standard errors) was calculated within a few seconds. Whereas the frequentist \ac{LASSO} took only slightly longer, despite the cross-validation for the punishment parameter $\lambda$, the Bayesian \ac{LASSO} took almost 18 hours due to the 12.500 \ac{MCMC} iterations.
+
+## Changing other  Hyperparameter
+
+As @park_bayesian_2008 have described in their paper, instead of selecting $\lambda$ directly, one can also use a diffuse prior and only specify the parameters of the gamma distribution. We took the proposed parameters from @park_bayesian_2008 with $r = 1$ and $\delta = 1.78$.    
 
 \FloatBarrier
 ```{r sensity , echo = FALSE }
@@ -624,11 +648,16 @@ The measurment to compare the results will be the \acf{RMSE}, which is definied 
 ```
 \FloatBarrier
 
+As Table \ref{tab:sum_bay_hy_1} shows, the results have not really changed.  There are still `r sum(HY[,2] * HY[,3] <= 0)` parameters outside the 95 percent credibility interval and, also the size of the effects have hardly changed, which is mainly due to the many iterations of the \c{MCMC} algorithm.  Also, the $\lambda$-parameter differs only slightly , from `r formatC(BA[14,1], format = "e", digits = 2)` to `r formatC(HY[14,1], format = "e", digits = 2)`. The respective 95 percent credibility intervals overlap, which means that they are not differ significantly.  
 
 \newpage
-# Discussion and further research 
-Struckturbruch
-LaSt Part
+
+# Conclusion 
+
+As we have shown in sections 5 and 6, the results of the Bayesian \ac{LASSO} are very similar to the results of the frequentist \ac{LASSO}. However, the Bayesian \ac{LASSO} performs a bit better, measured by the \ac{RMSE}, which does not seem to be substantially different. Our results are similar to those of @park_bayesian_2008, who also found no great difference between Bayesian LASSO and the normal one. However, @hans_bayesian_2009 found a reduction of the average prediction error from 16 to 36 percent with different dataets. 
+
+The small difference in the methods can - of course - also be due to the underlying data, since we estimate and calculate the RMSE with only one data set. As we have seen from the analyses of the residuals and the distribution of the response variable, the data are not optimal either.  A possibility for further analysis would be a Box-Cox transformation of the data to see if the Bayesian LASSO has greater advantages. Another possibility would be to generate data with a Monte Carlo simulation and then let the different methods do the estimation again. In this way, certain problems - such as heteroskedasticity - can be controlled.
+
 
 \newpage
 
@@ -642,9 +671,18 @@ $\quad$
   knitr::include_graphics(here::here('04_output/pl_lin_res.png'), auto_pdf = FALSE)
 ```
 
+```{r, , fig3_dens, echo = FALSE, fig.cap = " \\label{fig:res_lm_dens} Density Plot of the Residuals of the Linear Model",  out.width = '100%',  fig.align = "left"}
+  knitr::include_graphics(here::here('04_output/pl_lm_res_dens.png'), auto_pdf = FALSE)
+```
+
+\newpage
 
 ```{r, , fig4, echo = FALSE, fig.cap = " \\label{fig:res_lasso} Plot of the Residuals vs Fitted Values for the LASSO Model",  out.width = '100%',  fig.align = "left"}
   knitr::include_graphics(here::here('04_output/pl_las_res.png'), auto_pdf = FALSE)
+```
+
+```{r, , fig4_dens, echo = FALSE, fig.cap = " \\label{fig:res_lasso_dens} Density Plot of the Residuals of the LASSO Model",  out.width = '100%',  fig.align = "left"}
+  knitr::include_graphics(here::here('04_output/pl_las_res_dens.png'), auto_pdf = FALSE)
 ```
 
 

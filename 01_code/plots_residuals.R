@@ -18,6 +18,18 @@ ggsave(here::here('04_output/pl_lin_res.png'), plot = pl_lin_res,
        dpi = 600, limitsize = FALSE)
 
 
+pl_lm_res_dens <- ggplot(data = lm_plot_data, aes(residuals))+
+  geom_density(colour = "blue", fill = "blue", alpha = 0.3)+
+  labs(title = "Density distribution of the residuals", x = "Residuals", y = "Density")+
+  theme_minimal()+
+  theme(aspect.ratio = 9/16, plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))
+
+ggsave(here::here('04_output/pl_lm_res_dens.png'), plot = pl_lm_res_dens,
+       scale = 1, width = 20, height = 20*(9/16), units = 'cm',
+       dpi = 600, limitsize = FALSE)
+
+
+
 #in sample predictions
 
 
@@ -91,6 +103,20 @@ pl_las_res <- ggplot(data = lasso_plot_data, aes(fitted_values, residuals))+
 ggsave(here::here('04_output/pl_las_res.png'), plot = pl_las_res,
        scale = 1, width = 20, height = 20*(9/16), units = 'cm',
        dpi = 600, limitsize = FALSE)
+
+
+
+pl_las_res_dens <- ggplot(data = lasso_plot_data, aes(residuals))+
+  geom_density(colour = "blue", fill = "blue", alpha = 0.3)+
+  labs(title = "Density distribution of the residuals", x = "Residuals", y = "Density")+
+  theme_minimal()+
+  theme(aspect.ratio = 9/16, plot.title = element_text(hjust = 0.5), plot.margin=unit(c(1,1,1.5,1.2),"cm"))
+
+ggsave(here::here('04_output/pl_las_res_dens.png'), plot = pl_las_res_dens,
+       scale = 1, width = 20, height = 20*(9/16), units = 'cm',
+       dpi = 600, limitsize = FALSE)
+
+
 
 
 

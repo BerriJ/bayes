@@ -271,7 +271,10 @@ AA$p.value
  
  
  
- 
+rmse( robust_lm, test)
+
+rmse(fit_lm, test) 
+
  
 # r^2
  
@@ -280,9 +283,69 @@ AA$p.value
  names( summary(fit_lm))
 summary(fit_lm)$r.squared 
 
-r_squared <- (sum ((fit_lm$fitted.values - mean(as.matrix(train_y)))^2) ) / (sum (  (train_y - mean(as.matrix(train_y)))^2))
+r_squared <- (sum ((fit_lm$fitted.values - mean(as.matrix(train_y)))^2) ) /
+  (sum (  (train_y - mean(as.matrix(train_y)))^2))
 
  
  
  
+
+##robustness
  
+lmtest::bptest(fit_lm)
+
+car::ncvTest(fit_lm)
+
+coeftest(fit_lm, vcov = vcovHC(fit_lm))
+
+AA <-summary(robustbase::lmrob(log_value ~ ., data = train) )
+
+AA$coefficients[,4]
+
+sum(AA$coefficients[,4]>0.05)
+###
+
+
+com_fifa <- fifa_data%>% dplyr::select(vars,
+                                       year)
+
+trend <- summary(lm(log_value ~ . , data = com_fifa))
+
+
+new_trend <- summary(lm(log_value ~ . , data = fifa_data))
+
+
+summary(robustbase::lmrob(log_value ~ ., data = com_fifa) )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#lasso zu lm
+round(((rmse_freq_las - rmse_lm) / rmse_lm)*100 ,2)
+
+
+#bayes zu lm
+round(((rmse_bay_las - rmse_lm) / rmse_lm)*100 ,2)
+
+
+#bayes zu lasso
+round(((rmse_bay_las - rmse_freq_las) / rmse_freq_las)*100 ,2)
+
+
+BA[14,1] - HY[14,1]
+
+ifelse(BA[14,3] > HY[14,3], 1,0)
+
